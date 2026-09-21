@@ -1,11 +1,10 @@
-import React from 'react';
-import { ScrollView, View, StyleSheet, StatusBar, Platform } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import CabecalhoConta from '../../components/CabecalhoConta';
-import StatusBadges from '../../components/StatusBadges';
-import LinhaPerfil from '../../components/LinhaPerfil';
+import { Platform, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import BotaoAcaoRapida from '../../components/BotaoAcaoRapida';
+import CabecalhoConta from '../../components/CabecalhoConta';
 import CardPromocional from '../../components/CardPromocional';
+import LinhaPerfil from '../../components/LinhaPerfil';
+import StatusBadges from '../../components/StatusBadges';
 
 const USUARIO_MOCK = {
   nome: 'Marcos Andrade Ferreira',
@@ -56,7 +55,7 @@ export default function Conta() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#000',
   },
   content: {
     paddingHorizontal: 20,

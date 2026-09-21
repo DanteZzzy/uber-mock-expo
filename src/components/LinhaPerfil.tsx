@@ -1,6 +1,6 @@
-import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { cores } from '../theme/cores';
 
 type LinhaPerfilProps = {
   label: string;
@@ -10,9 +10,9 @@ type LinhaPerfilProps = {
 export default function LinhaPerfil({ label, onPress }: LinhaPerfilProps) {
   return (
     <TouchableOpacity style={styles.row} onPress={onPress} activeOpacity={0.7}>
-      <Ionicons name="person-outline" size={18} color="#000" style={styles.icon} />
+      <Ionicons name="person-outline" size={18} color={cores.textoPrincipal} style={styles.icon} />
       <Text style={styles.label}>{label}</Text>
-      <Ionicons name="chevron-down" size={18} color="#000" style={styles.chevron} />
+      <Ionicons name="chevron-down" size={18} color={cores.textoPrincipal} style={styles.chevron} />
     </TouchableOpacity>
   );
 }
@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F2F2F2',
+    backgroundColor: cores.superficieClara,
     borderRadius: 14,
     paddingVertical: 18,
     paddingHorizontal: 16,
@@ -34,6 +34,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontWeight: '600',
+    color: cores.textoPrincipal,
   },
   chevron: {
     marginLeft: 8,

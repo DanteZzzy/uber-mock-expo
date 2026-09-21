@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
+import { cores } from '../theme/cores';
 
 type CabecalhoContaProps = {
   nome: string;
@@ -30,11 +30,12 @@ const styles = StyleSheet.create({
     lineHeight: 33,
     marginRight: 12,
     letterSpacing: -0.5,
+    color: cores.textoPrincipal,
   },
   avatar: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#E5E5E5',
+    backgroundColor: cores.superficieClara,
   },
 });

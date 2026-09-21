@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, Text, View } from 'react-native';
+import { cores } from '../theme/cores';
 
 type StatusBadgesProps = {
   avaliacao: number;
@@ -11,7 +11,7 @@ export default function StatusBadges({ avaliacao, verificado }: StatusBadgesProp
   return (
     <View style={styles.row}>
       <View style={styles.badge}>
-        <Ionicons name="star" size={14} color="#000" />
+        <Ionicons name="star" size={14} color={cores.textoPrincipal} />
         <Text style={styles.badgeText}>{avaliacao.toFixed(2)}</Text>
       </View>
       <View style={styles.badge}>
@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#F2F2F2',
+    backgroundColor: cores.superficieClara,
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -41,5 +41,6 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 13,
     fontWeight: '600',
+    color: cores.textoPrincipal,
   },
 });

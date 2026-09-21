@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { cores } from '../theme/cores';
 
 type CardPromocionalProps = {
   titulo: string;
@@ -24,8 +25,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#F2F2F2',
+    backgroundColor: cores.superficie,
     borderRadius: 16,
+    borderWidth: 1,
+    borderColor: cores.borda,
     padding: 18,
     marginTop: 14,
   },
@@ -37,10 +40,11 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '700',
     marginBottom: 4,
+    color: cores.textoPrincipal,
   },
   descricao: {
     fontSize: 14,
-    color: '#4A4A4A',
+    color: cores.textoSecundario,
     lineHeight: 19,
   },
 });
