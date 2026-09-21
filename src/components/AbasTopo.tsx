@@ -1,36 +1,51 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { cores } from '../theme/cores';
 
+export type AbaId = 'uber' | 'envios' | 'ifood';
+
 type Aba = {
+  id: AbaId;
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
-  ativa?: boolean;
 };
 
 const ABAS: Aba[] = [
-  { label: 'Uber', icon: 'car-outline', ativa: true },
-  { label: 'Envios', icon: 'cube-outline' },
-  { label: 'iFood', icon: 'fast-food-outline' },
+  { id: 'uber', label: 'Uber', icon: 'car-outline' },
+  { id: 'envios', label: 'Envios', icon: 'cube-outline' },
+  { id: 'ifood', label: 'iFood', icon: 'fast-food-outline' },
 ];
 
-export default function AbasTopo() {
+type AbasTopoProps = {
+  abaSelecionada: AbaId;
+  onSelecionar: (id: AbaId) => void;
+};
+
+export default function AbasTopo({ abaSelecionada, onSelecionar }: AbasTopoProps) {
   return (
     <View style={styles.row}>
-      {ABAS.map((aba) => (
-        <View key={aba.label} style={styles.abaWrapper}>
-          <View style={styles.aba}>
-            <Ionicons
-              name={aba.icon}
-              size={18}
-              color={aba.ativa ? cores.textoPrincipal : cores.textoSecundario}
-            />
-            <Text style={[styles.label, aba.ativa && styles.labelAtiva]}>{aba.label}</Text>
-          </View>
-          {aba.ativa && <View style={styles.indicador} />}
-        </View>
-      ))}
+      {ABAS.map((aba) => {
+        const ativa = aba.id === abaSelecionada;
+        return (
+          <TouchableOpacity
+            key={aba.id}
+            style={styles.abaWrapper}
+            onPress={() => onSelecionar(aba.id)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.aba}>
+              <Ionicons
+                name={aba.icon}
+                size={18}
+                color={ativa ? cores.textoPrincipal : cores.textoSecundario}
+              />
+              <Text style={[styles.label, ativa && styles.labelAtiva]}>{aba.label}</Text>
+            </View>
+            {ativa && <View style={styles.indicador} />}
+          </TouchableOpacity>
+        );
+      })}
     </View>
   );
 }
