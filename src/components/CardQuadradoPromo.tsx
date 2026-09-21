@@ -1,31 +1,30 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { TouchableOpacity, Image, StyleSheet, ImageSourcePropType } from 'react-native';
 
-type CardQuadradoPromoProps = {
-  titulo: string;
-  corFundo: string;
-};
+interface Props {
+  imagem: ImageSourcePropType;
+}
 
-export default function CardQuadradoPromo({ titulo, corFundo }: CardQuadradoPromoProps) {
+export default function CardQuadradoPromo({ imagem }: Props) {
   return (
-    <View style={[styles.card, { backgroundColor: corFundo }]}>
-      <Text style={styles.titulo}>{titulo}</Text>
-    </View>
+    <TouchableOpacity style={styles.container} activeOpacity={0.8}>
+      <Image 
+        source={imagem} 
+        style={styles.imagem} 
+        resizeMode="cover" // Faz a imagem preencher todo o card
+      />
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    width: 120,
-    height: 110,
+  container: {
+    width: 110,  // Ajuste a largura conforme necessário
+    height: 125, // Ajuste a altura conforme necessário
     borderRadius: 12,
-    padding: 12,
-    justifyContent: 'flex-end',
+    overflow: 'hidden', // Arredonda as pontas da imagem também
   },
-  titulo: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '800',
-    lineHeight: 18,
-  },
+  imagem: {
+    width: '100%',
+    height: '100%',
+  }
 });
