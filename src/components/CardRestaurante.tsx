@@ -1,60 +1,57 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ImageBackground, ImageSourcePropType, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { cores } from '../theme/cores';
 
-type CardRestauranteProps = {
+
+interface Props {
   nome: string;
   nota: number;
-};
+  imagem: ImageSourcePropType;
+}
 
-export default function CardRestaurante({ nome, nota }: CardRestauranteProps) {
+export default function CardRestaurante({ nome, nota, imagem }: Props) {
   return (
-    <View style={styles.card}>
-      <View style={styles.imagem}>
-        <View style={styles.notaBadge}>
-          <Ionicons name="star" size={11} color="#000" />
+    <TouchableOpacity activeOpacity={0.8} style={styles.container}>
+      <ImageBackground 
+        source={imagem} 
+        style={styles.imagemFundo}
+        imageStyle={styles.imagemArredondada}
+      >
+        <View style={styles.notaContainer}>
+          <Ionicons name="star" size={12} color="#E8A317" />
           <Text style={styles.notaTexto}>{nota.toFixed(1)}</Text>
         </View>
-      </View>
-      <Text style={styles.nome} numberOfLines={1}>
-        {nome}
-      </Text>
-    </View>
+      </ImageBackground>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    width: 130,
-  },
-  imagem: {
-    width: 130,
-    height: 90,
+  container: {
+    width: 130, // Largura baseada na imagem de referência
+    height: 110,
     borderRadius: 12,
-    backgroundColor: cores.superficieClara,
-    justifyContent: 'flex-start',
-    padding: 8,
   },
-  notaBadge: {
+  imagemFundo: {
+    width: '100%',
+    height: '100%',
+    padding: 8, // Espaçamento para a tag de nota não grudar nas bordas
+  },
+  imagemArredondada: {
+    borderRadius: 12, // Arredonda a imagem de fundo
+  },
+  notaContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
-    alignSelf: 'flex-start',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
+    backgroundColor: '#333333', // Cor escura como na referência
     paddingHorizontal: 6,
-    paddingVertical: 3,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start', // Faz o container da nota ocupar apenas o espaço necessário
+    gap: 4,
   },
   notaTexto: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#000',
-  },
-  nome: {
-    color: cores.textoPrincipal,
-    fontSize: 13,
-    fontWeight: '700',
-    marginTop: 6,
-  },
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
+  }
 });
