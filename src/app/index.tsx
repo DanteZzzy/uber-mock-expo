@@ -79,6 +79,9 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
+    width: "100%",
+    maxWidth: 440,
+    alignSelf: "center",
   },
   titulo: {
     fontSize: 20,
