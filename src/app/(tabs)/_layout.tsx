@@ -4,6 +4,9 @@ import { useWindowDimensions } from "react-native";
 
 import { cores } from "../../theme/cores";
 
+const corBorda = "rgba(255, 255, 255, 0.25)";
+const corBrilho = "rgba(255, 255, 255, 0.18)";
+
 export default function TabsLayout() {
   const { width } = useWindowDimensions();
   const larguraBarra = Math.min(width - 32, 600);
@@ -23,7 +26,11 @@ export default function TabsLayout() {
           height: 64,
           borderRadius: 32,
           backgroundColor: cores.superficie,
-          borderTopWidth: 0,
+          borderWidth: 1,
+          borderTopWidth: 1,
+          borderColor: corBorda,
+          borderTopColor: corBorda,
+          boxShadow: `0 0 14px ${corBrilho}`,
         },
         tabBarLabelStyle: { fontSize: 12, marginBottom: 6 },
         sceneStyle: { backgroundColor: cores.fundo },
