@@ -7,21 +7,37 @@ type Props = {
   acao: string;
   emoji: string;
   onPress?: () => void;
+  grande?: boolean;
 };
 
-export function CartaoAviso({ titulo, acao, emoji, onPress }: Props) {
+export function CartaoAviso({
+  titulo,
+  acao,
+  emoji,
+  onPress,
+  grande = false,
+}: Props) {
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.cartao, pressed && styles.pressionado]}
+      style={({ pressed }) => [
+        styles.cartao,
+        grande && styles.cartaoGrande,
+        pressed && styles.pressionado,
+      ]}
     >
       <View style={styles.textos}>
-        <Text style={styles.titulo} numberOfLines={3}>
+        <Text
+          style={[styles.titulo, grande && styles.tituloGrande]}
+          numberOfLines={3}
+        >
           {titulo}
         </Text>
-        <Text style={styles.acao}>{acao} →</Text>
+        <Text style={[styles.acao, grande && styles.acaoGrande]}>
+          {acao} →
+        </Text>
       </View>
-      <Text style={styles.emoji}>{emoji}</Text>
+      <Text style={[styles.emoji, grande && styles.emojiGrande]}>{emoji}</Text>
     </Pressable>
   );
 }
@@ -38,6 +54,12 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 20,
   },
+  cartaoGrande: {
+    gap: 16,
+    borderRadius: 20,
+    padding: 28,
+    marginBottom: 28,
+  },
   pressionado: {
     opacity: 0.8,
   },
@@ -50,11 +72,20 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "700",
   },
+  tituloGrande: {
+    fontSize: 24,
+  },
   acao: {
     color: cores.textoSecundario,
     fontSize: 15,
   },
+  acaoGrande: {
+    fontSize: 17,
+  },
   emoji: {
     fontSize: 56,
+  },
+  emojiGrande: {
+    fontSize: 72,
   },
 });

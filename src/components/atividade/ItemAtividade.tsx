@@ -7,23 +7,33 @@ import { BotaoPilula } from "../BotaoPilula";
 type Props = {
   atividade: Atividade;
   onReagendar?: () => void;
+  grande?: boolean;
 };
 
-export function ItemAtividade({ atividade, onReagendar }: Props) {
+export function ItemAtividade({
+  atividade,
+  onReagendar,
+  grande = false,
+}: Props) {
   const { destino, data, valor, detalhe } = atividade;
 
   return (
-    <View style={styles.item}>
-      <View style={styles.miniatura}>
-        <Text style={styles.emoji}>🚗</Text>
+    <View style={[styles.item, grande && styles.itemGrande]}>
+      <View style={[styles.miniatura, grande && styles.miniaturaGrande]}>
+        <Text style={[styles.emoji, grande && styles.emojiGrande]}>🚗</Text>
       </View>
 
       <View style={styles.textos}>
-        <Text style={styles.destino} numberOfLines={1}>
+        <Text
+          style={[styles.destino, grande && styles.destinoGrande]}
+          numberOfLines={1}
+        >
           {destino}
         </Text>
-        <Text style={styles.detalhe}>{data}</Text>
-        <Text style={styles.detalhe}>
+        <Text style={[styles.detalhe, grande && styles.detalheGrande]}>
+          {data}
+        </Text>
+        <Text style={[styles.detalhe, grande && styles.detalheGrande]}>
           {valor}
           {detalhe ? ` • ${detalhe}` : ""}
         </Text>
@@ -41,6 +51,10 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingVertical: 12,
   },
+  itemGrande: {
+    gap: 16,
+    paddingVertical: 16,
+  },
   miniatura: {
     width: 60,
     height: 60,
@@ -49,8 +63,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  miniaturaGrande: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+  },
   emoji: {
     fontSize: 28,
+  },
+  emojiGrande: {
+    fontSize: 38,
   },
   textos: {
     flex: 1,
@@ -61,8 +83,14 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
   },
+  destinoGrande: {
+    fontSize: 21,
+  },
   detalhe: {
     color: cores.textoSecundario,
     fontSize: 15,
+  },
+  detalheGrande: {
+    fontSize: 17,
   },
 });
