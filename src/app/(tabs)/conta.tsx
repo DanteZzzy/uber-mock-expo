@@ -1,5 +1,6 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { Platform, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BotaoAcaoRapida from '../../components/BotaoAcaoRapida';
 import CabecalhoConta from '../../components/CabecalhoConta';
 import CardPromocional from '../../components/CardPromocional';
@@ -21,8 +22,13 @@ const ACOES_RAPIDAS = [
 ] as const;
 
 export default function Conta() {
+  const insets = useSafeAreaInsets();
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={[styles.content, { paddingTop: insets.top + 16 }]}
+    >
       <CabecalhoConta nome={USUARIO_MOCK.nome} avatarUrl={USUARIO_MOCK.avatarUrl} />
       <StatusBadges avaliacao={USUARIO_MOCK.avaliacao} verificado={USUARIO_MOCK.verificado} />
       <LinhaPerfil label="Perfil Pessoal" />
@@ -59,7 +65,6 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 20,
-    paddingTop: (Platform.OS === 'android' ? StatusBar.currentHeight ?? 0 : 0) + 16,
     paddingBottom: 110, // espaço extra pra não colidir com a navbar flutuante
   },
   grid: {
