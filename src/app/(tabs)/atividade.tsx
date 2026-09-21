@@ -1,11 +1,17 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { CartaoAviso } from "../../components/atividade/CartaoAviso";
 import { CartaoDestaque } from "../../components/atividade/CartaoDestaque";
 import { ItemAtividade } from "../../components/atividade/ItemAtividade";
-import { Container } from "../../components/Container";
 import {
   atividadeDestaque,
   atividadesAnteriores,
@@ -15,13 +21,18 @@ import { cores } from "../../theme/cores";
 
 export default function Atividade() {
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const duasColunas = width >= 900;
 
   return (
     <ScrollView
       style={styles.tela}
-      contentContainerStyle={{ paddingTop: insets.top + 16, paddingBottom: 120 }}
+      contentContainerStyle={{
+        paddingTop: insets.top + (duasColunas ? 32 : 36),
+        paddingBottom: 120,
+      }}
     >
-      <Container larguraMaxima={480}>
+      <View style={[styles.conteudo, { maxWidth: duasColunas ? 1080 : 480 }]}>
         <Text style={styles.titulo}>Atividade</Text>
 
         <View style={styles.cabecalhoSecao}>
@@ -35,20 +46,23 @@ export default function Atividade() {
           </Pressable>
         </View>
 
-        <CartaoAviso
-          titulo={avisoAtividade.titulo}
-          acao={avisoAtividade.acao}
-          emoji={avisoAtividade.emoji}
-        />
+        <View style={duasColunas ? styles.colunas : undefined}>
+          <View style={duasColunas ? styles.coluna : undefined}>
+            <CartaoAviso
+              titulo={avisoAtividade.titulo}
+              acao={avisoAtividade.acao}
+              emoji={avisoAtividade.emoji}
+            />
+            <CartaoDestaque atividade={atividadeDestaque} />
+          </View>
 
-        <CartaoDestaque atividade={atividadeDestaque} />
-
-        <View>
-          {atividadesAnteriores.map((atividade) => (
-            <ItemAtividade key={atividade.id} atividade={atividade} />
-          ))}
+          <View style={duasColunas ? styles.coluna : undefined}>
+            {atividadesAnteriores.map((atividade) => (
+              <ItemAtividade key={atividade.id} atividade={atividade} />
+            ))}
+          </View>
         </View>
-      </Container>
+      </View>
     </ScrollView>
   );
 }
@@ -57,6 +71,11 @@ const styles = StyleSheet.create({
   tela: {
     flex: 1,
     backgroundColor: cores.fundo,
+  },
+  conteudo: {
+    width: "100%",
+    alignSelf: "center",
+    paddingHorizontal: 20,
   },
   titulo: {
     color: cores.textoPrincipal,
@@ -82,5 +101,13 @@ const styles = StyleSheet.create({
     backgroundColor: cores.superficieClara,
     alignItems: "center",
     justifyContent: "center",
+  },
+  colunas: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 32,
+  },
+  coluna: {
+    flex: 1,
   },
 });
