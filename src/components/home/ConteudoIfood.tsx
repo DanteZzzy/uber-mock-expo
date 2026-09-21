@@ -21,20 +21,21 @@ const CATEGORIAS = [
 ] as const;
 
 const BANNERS = [
-  { titulo: 'Pratos a partir de R$10, tá barato demais', corFundo: '#FF6B00' },
-  { titulo: 'Mês do cliente: frete grátis', corFundo: cores.destaque },
+  { id: 'banner1', imagem: { uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSreiJ_Tk3dNmCw8eT3O94KqcNL3UExWx4kO_SKXf08-g&s=10' } },
+  { id: 'banner2', imagem: { uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTaWbyIQabZwMBwD_wkdfONdgXIc6ccVku63F6SCzMiIQ&s=10' } },
 ];
 
 const CARDS_QUADRADOS = [
-  { titulo: 'entrega grátis aqui', corFundo: cores.destaque },
-  { titulo: 'vem que aqui tem promoções', corFundo: '#B3141F' },
-  { titulo: 'famosos com descontão', corFundo: '#7A0C13' },
+  { id: 'card1', imagem: { uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWPU2drw0KGvNkHf5GCWJ-05gdedcWCa6jjm-rtBPGzA&s' } },
+  { id: 'card2', imagem: { uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTA_c6q_hjf_vC_BH_VLNbWjFkFEYMh_k3p0nRTYSvSmQ&s=10' } },
+  { id: 'card3', imagem: { uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTU90lim6Ab0fkWbkjtWuXXQuVXqg_VH91-D6FETiOxXw&s=10' } },
 ];
 
+// Adicionada a propriedade imagem para os restaurantes
 const RESTAURANTES_CUPOM = [
-  { nome: 'Burger House', nota: 4.9 },
-  { nome: 'Cheddar Point', nota: 4.6 },
-  { nome: 'Frango & Cia', nota: 4.2 },
+  { nome: 'Burger House', nota: 4.9, imagem: { uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKyuc7y5-W5VqqMFqmhX6OGV_IhO42ChS5pgLfHdKocg&s=10' } },
+  { nome: 'Cheddar Point', nota: 4.6, imagem: { uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8X-YthSZLUnyri0VToBl-OmCQVAwyUGiI0LMfHYF0Pw&s=10' } }, // Use links reais ou require()
+  { nome: 'Bacon Stack', nota: 4.2, imagem: { uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMsf75uwt_YWOEkvmBeQI-dWu9GsrXEgeHhe94zx5EXg&s=10' } },
 ];
 
 export default function ConteudoIfood() {
@@ -70,7 +71,7 @@ export default function ConteudoIfood() {
         contentContainerStyle={styles.bannersScroll}
       >
         {BANNERS.map((banner) => (
-          <BannerPromo key={banner.titulo} titulo={banner.titulo} corFundo={banner.corFundo} />
+          <BannerPromo key={banner.id} imagem={banner.imagem} />
         ))}
       </ScrollView>
 
@@ -80,7 +81,7 @@ export default function ConteudoIfood() {
         contentContainerStyle={styles.cardsQuadradosScroll}
       >
         {CARDS_QUADRADOS.map((card) => (
-          <CardQuadradoPromo key={card.titulo} titulo={card.titulo} corFundo={card.corFundo} />
+          <CardQuadradoPromo key={card.id} imagem={card.imagem} />
         ))}
       </ScrollView>
 
@@ -98,7 +99,12 @@ export default function ConteudoIfood() {
         contentContainerStyle={styles.restaurantesScroll}
       >
         {RESTAURANTES_CUPOM.map((restaurante) => (
-          <CardRestaurante key={restaurante.nome} nome={restaurante.nome} nota={restaurante.nota} />
+          <CardRestaurante 
+            key={restaurante.nome} 
+            nome={restaurante.nome} 
+            nota={restaurante.nota} 
+            imagem={restaurante.imagem} // Passando a imagem para o componente
+          />
         ))}
       </ScrollView>
     </>
