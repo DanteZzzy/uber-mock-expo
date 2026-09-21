@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AbasTopo from '../../components/AbasTopo';
 import AtalhoCircular from '../../components/AtalhoCircular';
 import BarraBusca from '../../components/BarraBusca';
@@ -27,8 +28,13 @@ const ENDERECOS_SALVOS = [
 ];
 
 export default function Home() {
+  const insets = useSafeAreaInsets();
+
   return (
-    <ScrollView style={styles.tela} contentContainerStyle={styles.conteudo}>
+    <ScrollView
+      style={styles.tela}
+      contentContainerStyle={[styles.conteudo, { paddingTop: insets.top + 12 }]}
+    >
       <AbasTopo />
       <BarraBusca nomeUsuario="Igor" />
 
@@ -79,7 +85,6 @@ const styles = StyleSheet.create({
   },
   conteudo: {
     paddingHorizontal: 16,
-    paddingTop: 12,
     paddingBottom: 100, // espaço pra não colidir com a navbar flutuante
   },
   cardEnderecos: {
