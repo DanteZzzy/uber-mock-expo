@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 
 import { cores } from "../../theme/cores";
@@ -30,6 +30,15 @@ export default function TabsLayout() {
           title: "Página inicial",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="opcoes"
+        options={{
+          title: "Opções",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="dots-grid" size={size} color={color} />
           ),
         }}
       />
