@@ -1,9 +1,14 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { useWindowDimensions } from "react-native";
 
 import { cores } from "../../theme/cores";
 
 export default function TabsLayout() {
+  const { width } = useWindowDimensions();
+  const larguraBarra = Math.min(width - 32, 600);
+  const margemLateral = (width - larguraBarra) / 2;
+
   return (
     <Tabs
       screenOptions={{
@@ -12,8 +17,8 @@ export default function TabsLayout() {
         tabBarInactiveTintColor: cores.textoSecundario,
         tabBarStyle: {
           position: "absolute",
-          left: 16,
-          right: 16,
+          left: margemLateral,
+          right: margemLateral,
           bottom: 16,
           height: 64,
           borderRadius: 32,
