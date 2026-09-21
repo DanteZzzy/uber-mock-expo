@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 import { Botao } from "../components/Botao";
 import { Cabecalho } from "../components/Cabecalho";
@@ -10,10 +11,10 @@ import { Divisor } from "../components/Divisor";
 
 export default function Login() {
   const [contato, setContato] = useState("");
+  const router = useRouter();
 
-  function continuar() {
-    // Quando a Home existir, vamos navegar para ela aqui
-    console.log("Continuar com:", contato);
+  function irParaHome() {
+    router.replace("/home");
   }
 
   return (
@@ -32,7 +33,7 @@ export default function Login() {
           onChangeText={setContato}
         />
 
-        <Botao titulo="Continuar" onPress={continuar} />
+        <Botao titulo="Continuar" onPress={irParaHome} />
 
         <Divisor />
 
@@ -41,11 +42,13 @@ export default function Login() {
             variante="social"
             titulo="Continuar com o Google"
             icone={<Ionicons name="logo-google" size={20} color="#000" />}
+            onPress={irParaHome}
           />
           <Botao
             variante="social"
             titulo="Continuar com a Apple"
             icone={<Ionicons name="logo-apple" size={20} color="#000" />}
+            onPress={irParaHome}
           />
         </View>
 
