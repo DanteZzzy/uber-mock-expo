@@ -1,4 +1,11 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  StyleProp,
+  StyleSheet,
+  Text,
+  View,
+  ViewStyle,
+} from "react-native";
 
 import type { Opcao } from "../../data/opcoes";
 import { cores } from "../../theme/cores";
@@ -6,13 +13,18 @@ import { cores } from "../../theme/cores";
 type Props = {
   opcao: Opcao;
   onPress?: () => void;
+  style?: StyleProp<ViewStyle>;
 };
 
-export function CartaoOpcao({ opcao, onPress }: Props) {
+export function CartaoOpcao({ opcao, onPress, style }: Props) {
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.cartao, pressed && styles.pressionado]}
+      style={({ pressed }) => [
+        styles.cartao,
+        pressed && styles.pressionado,
+        style,
+      ]}
     >
       {opcao.selo && (
         <View style={styles.selo}>
@@ -28,7 +40,6 @@ export function CartaoOpcao({ opcao, onPress }: Props) {
 
 const styles = StyleSheet.create({
   cartao: {
-    flex: 1,
     height: 104,
     alignItems: "center",
     justifyContent: "center",
