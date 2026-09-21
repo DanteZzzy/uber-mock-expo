@@ -1,42 +1,30 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { TouchableOpacity, Image, StyleSheet, ImageSourcePropType } from 'react-native';
 
-type BannerPromoProps = {
-  titulo: string;
-  legenda?: string;
-  corFundo: string;
-};
+interface Props {
+  imagem: ImageSourcePropType;
+}
 
-// Cores vivas específicas dos banners promocionais — não fazem parte da paleta base do app,
-// são cores de marketing/campanha, por isso ficam soltas aqui em vez de em cores.ts
-export default function BannerPromo({ titulo, legenda, corFundo }: BannerPromoProps) {
+export default function CardQuadradoPromo({ imagem }: Props) {
   return (
-    <View style={[styles.banner, { backgroundColor: corFundo }]}>
-      <Text style={styles.titulo}>{titulo}</Text>
-      {legenda && <Text style={styles.legenda}>{legenda}</Text>}
-    </View>
+    <TouchableOpacity style={styles.container} activeOpacity={0.8}>
+      <Image 
+        source={imagem} 
+        style={styles.imagem} 
+        resizeMode="cover" // Faz a imagem preencher todo o card
+      />
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  banner: {
-    width: 260,
-    height: 130,
-    borderRadius: 16,
-    padding: 16,
-    justifyContent: 'flex-end',
+  container: {
+    width: 200,  // Ajuste a largura conforme necessário
+    height: 230, // Ajuste a altura conforme necessário
+    borderRadius: 12,
+    overflow: 'hidden', // Arredonda as pontas da imagem também
   },
-  titulo: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '800',
-    lineHeight: 22,
-  },
-  legenda: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
-    marginTop: 4,
-    opacity: 0.9,
-  },
+  imagem: {
+    width: '100%',
+    height: '100%',
+  }
 });
