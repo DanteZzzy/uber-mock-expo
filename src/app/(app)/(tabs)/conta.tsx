@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BotaoAcaoRapida from "../../../components/BotaoAcaoRapida";
+import { BotaoSair } from '../../../components/BotaoSair';
 import CabecalhoConta from "../../../components/CabecalhoConta";
 import CardPromocional from "../../../components/CardPromocional";
 import LinhaPerfil from "../../../components/LinhaPerfil";
@@ -79,6 +80,7 @@ export default function Conta() {
           <Ionicons name="map" size={28} color={cores.textoPrincipal} />
         }
       />
+      <BotaoSair />
     </ScrollView>
   );
 }
