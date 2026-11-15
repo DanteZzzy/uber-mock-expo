@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { cores } from '../../theme/cores';
+import { useTema } from '../../theme/TemaContext';
+import type { Cores } from '../../theme/temas';
 import AtalhoCircular from '../AtalhoCircular';
 import BarraBusca from '../BarraBusca';
 import CardBanner from '../CardBanner';
@@ -26,6 +27,9 @@ const ENDERECOS_SALVOS = [
 ];
 
 export default function ConteudoUber() {
+  const { cores } = useTema();
+  const styles = useMemo(() => criarEstilos(cores), [cores]);
+
   return (
     <>
       <BarraBusca nomeUsuario="Igor" />
@@ -66,41 +70,42 @@ export default function ConteudoUber() {
   );
 }
 
-const styles = StyleSheet.create({
-  cardEnderecos: {
-    backgroundColor: cores.superficie,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: cores.borda,
-    paddingHorizontal: 14,
-    marginTop: 16,
-  },
-  divisor: {
-    height: 1,
-    backgroundColor: cores.borda,
-  },
-  secaoHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 24,
-  },
-  secaoTitulo: {
-    color: cores.textoPrincipal,
-    fontSize: 20,
-    fontWeight: '800',
-  },
-  setaCircular: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: cores.superficieClara,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  carrossel: {
-    flexDirection: 'row',
-    gap: 16,
-    paddingTop: 16,
-  },
-});
+const criarEstilos = (cores: Cores) =>
+  StyleSheet.create({
+    cardEnderecos: {
+      backgroundColor: cores.superficie,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: cores.borda,
+      paddingHorizontal: 14,
+      marginTop: 16,
+    },
+    divisor: {
+      height: 1,
+      backgroundColor: cores.borda,
+    },
+    secaoHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginTop: 24,
+    },
+    secaoTitulo: {
+      color: cores.textoPrincipal,
+      fontSize: 20,
+      fontWeight: '800',
+    },
+    setaCircular: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: cores.superficieClara,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    carrossel: {
+      flexDirection: 'row',
+      gap: 16,
+      paddingTop: 16,
+    },
+  });
