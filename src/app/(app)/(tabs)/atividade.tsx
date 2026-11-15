@@ -1,25 +1,25 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useMemo } from "react";
 import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-  useWindowDimensions,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
+    useWindowDimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { CartaoAviso } from "../../components/atividade/CartaoAviso";
-import { CartaoDestaque } from "../../components/atividade/CartaoDestaque";
-import { ItemAtividade } from "../../components/atividade/ItemAtividade";
+import { CartaoAviso } from "../../../components/atividade/CartaoAviso";
+import { CartaoDestaque } from "../../../components/atividade/CartaoDestaque";
+import { ItemAtividade } from "../../../components/atividade/ItemAtividade";
 import {
-  atividadeDestaque,
-  atividadesAnteriores,
-  avisoAtividade,
-} from "../../data/atividades";
-import { useTema } from "../../theme/TemaContext";
-import type { Cores } from "../../theme/temas";
+    atividadeDestaque,
+    atividadesAnteriores,
+    avisoAtividade,
+} from "../../../data/atividades";
+import { useTema } from "../../../theme/TemaContext";
+import type { Cores } from "../../../theme/temas";
 
 export default function Atividade() {
   const insets = useSafeAreaInsets();

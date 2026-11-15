@@ -2,7 +2,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { useWindowDimensions } from "react-native";
 
-import { useTema } from "../../theme/TemaContext";
+import { useTema } from "../../../theme/TemaContext";
 
 export default function TabsLayout() {
   const { width } = useWindowDimensions();
@@ -54,7 +54,11 @@ export default function TabsLayout() {
         options={{
           title: "Opções",
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="dots-grid" size={size} color={color} />
+            <MaterialCommunityIcons
+              name="dots-grid"
+              size={size}
+              color={color}
+            />
           ),
         }}
       />

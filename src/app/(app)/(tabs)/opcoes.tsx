@@ -1,17 +1,17 @@
 import { useMemo } from "react";
 import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-  useWindowDimensions,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
+    useWindowDimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { CartaoOpcao } from "../../components/opcoes/CartaoOpcao";
-import { opcoesPrincipais, opcoesSecundarias } from "../../data/opcoes";
-import { useTema } from "../../theme/TemaContext";
-import type { Cores } from "../../theme/temas";
+import { CartaoOpcao } from "../../../components/opcoes/CartaoOpcao";
+import { opcoesPrincipais, opcoesSecundarias } from "../../../data/opcoes";
+import { useTema } from "../../../theme/TemaContext";
+import type { Cores } from "../../../theme/temas";
 
 const LARGURA_MAXIMA_DESKTOP = 900;
 const COLUNAS = 4;
@@ -30,7 +30,7 @@ export default function Opcoes() {
   // largura útil da grade (descontando o recuo lateral de 20px de cada lado)
   const larguraConteudo = Math.min(width - 24, LARGURA_MAXIMA_DESKTOP) - 40;
   const larguraCartao = Math.floor(
-    (larguraConteudo - ESPACO * (COLUNAS - 1)) / COLUNAS
+    (larguraConteudo - ESPACO * (COLUNAS - 1)) / COLUNAS,
   );
 
   return (
