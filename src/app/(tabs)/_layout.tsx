@@ -2,15 +2,19 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { useWindowDimensions } from "react-native";
 
-import { cores } from "../../theme/cores";
-
-const corBorda = "rgba(255, 255, 255, 0.25)";
-const corBrilho = "rgba(255, 255, 255, 0.18)";
+import { useTema } from "../../theme/TemaContext";
 
 export default function TabsLayout() {
   const { width } = useWindowDimensions();
-  const larguraBarra = Math.min(width - 32, 600);
+  const { modo, cores } = useTema();
+
+  const larguraBarra = Math.min(width - 32, 480);
   const margemLateral = (width - larguraBarra) / 2;
+
+  const corBorda =
+    modo === "escuro" ? "rgba(255, 255, 255, 0.25)" : "rgba(0, 0, 0, 0.15)";
+  const corBrilho =
+    modo === "escuro" ? "rgba(255, 255, 255, 0.18)" : "rgba(0, 0, 0, 0.12)";
 
   return (
     <Tabs
