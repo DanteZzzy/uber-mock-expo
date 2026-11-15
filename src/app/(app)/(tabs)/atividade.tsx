@@ -1,12 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useMemo } from "react";
 import {
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
-    useWindowDimensions,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -14,9 +15,9 @@ import { CartaoAviso } from "../../../components/atividade/CartaoAviso";
 import { CartaoDestaque } from "../../../components/atividade/CartaoDestaque";
 import { ItemAtividade } from "../../../components/atividade/ItemAtividade";
 import {
-    atividadeDestaque,
-    atividadesAnteriores,
-    avisoAtividade,
+  atividadeDestaque,
+  atividadesAnteriores,
+  avisoAtividade,
 } from "../../../data/atividades";
 import { useTema } from "../../../theme/TemaContext";
 import type { Cores } from "../../../theme/temas";
@@ -25,9 +26,14 @@ export default function Atividade() {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const duasColunas = width >= 900;
+  const router = useRouter();
 
   const { cores } = useTema();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
+
+  function abrirDetalhe(id: string) {
+    router.push(`/viagem/${id}`);
+  }
 
   return (
     <ScrollView
@@ -58,12 +64,19 @@ export default function Atividade() {
               acao={avisoAtividade.acao}
               emoji={avisoAtividade.emoji}
             />
-            <CartaoDestaque atividade={atividadeDestaque} />
+            <Pressable onPress={() => abrirDetalhe(atividadeDestaque.id)}>
+              <CartaoDestaque atividade={atividadeDestaque} />
+            </Pressable>
           </View>
 
           <View style={duasColunas ? styles.coluna : undefined}>
             {atividadesAnteriores.map((atividade) => (
-              <ItemAtividade key={atividade.id} atividade={atividade} />
+              <Pressable
+                key={atividade.id}
+                onPress={() => abrirDetalhe(atividade.id)}
+              >
+                <ItemAtividade atividade={atividade} />
+              </Pressable>
             ))}
           </View>
         </View>
