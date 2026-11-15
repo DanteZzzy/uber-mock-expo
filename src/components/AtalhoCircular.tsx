@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { cores } from '../theme/cores';
+import { useTema } from '../theme/TemaContext';
+import type { Cores } from '../theme/temas';
 
 type IconLib = 'ionicons' | 'material-community';
 
@@ -20,6 +21,9 @@ export default function AtalhoCircular({
   badge,
   onPress,
 }: AtalhoCircularProps) {
+  const { cores } = useTema();
+  const styles = useMemo(() => criarEstilos(cores), [cores]);
+
   return (
     <TouchableOpacity style={styles.wrapper} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.circulo}>
@@ -39,38 +43,39 @@ export default function AtalhoCircular({
   );
 }
 
-const styles = StyleSheet.create({
-  wrapper: {
-    alignItems: 'center',
-    width: 78,
-  },
-  circulo: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    backgroundColor: cores.superficieClara,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  badge: {
-    position: 'absolute',
-    top: -6,
-    left: -4,
-    backgroundColor: cores.destaque,
-    borderRadius: 6,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    zIndex: 1,
-  },
-  badgeTexto: {
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: '800',
-  },
-  label: {
-    marginTop: 8,
-    color: cores.textoPrincipal,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-});
+const criarEstilos = (cores: Cores) =>
+  StyleSheet.create({
+    wrapper: {
+      alignItems: 'center',
+      width: 78,
+    },
+    circulo: {
+      width: 68,
+      height: 68,
+      borderRadius: 34,
+      backgroundColor: cores.superficieClara,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    badge: {
+      position: 'absolute',
+      top: -6,
+      left: -4,
+      backgroundColor: cores.destaque,
+      borderRadius: 6,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      zIndex: 1,
+    },
+    badgeTexto: {
+      color: '#FFFFFF',
+      fontSize: 10,
+      fontWeight: '800',
+    },
+    label: {
+      marginTop: 8,
+      color: cores.textoPrincipal,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+  });
