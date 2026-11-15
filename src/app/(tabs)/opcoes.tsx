@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -9,7 +10,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { CartaoOpcao } from "../../components/opcoes/CartaoOpcao";
 import { opcoesPrincipais, opcoesSecundarias } from "../../data/opcoes";
-import { cores } from "../../theme/cores";
+import { useTema } from "../../theme/TemaContext";
+import type { Cores } from "../../theme/temas";
 
 const LARGURA_MAXIMA_DESKTOP = 900;
 const COLUNAS = 4;
@@ -21,6 +23,9 @@ export default function Opcoes() {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const desktop = width >= 900;
+
+  const { cores } = useTema();
+  const styles = useMemo(() => criarEstilos(cores), [cores]);
 
   // largura útil da grade (descontando o recuo lateral de 20px de cada lado)
   const larguraConteudo = Math.min(width - 24, LARGURA_MAXIMA_DESKTOP) - 40;
@@ -85,40 +90,41 @@ export default function Opcoes() {
   );
 }
 
-const styles = StyleSheet.create({
-  tela: {
-    flex: 1,
-    backgroundColor: cores.fundo,
-  },
-  conteudo: {
-    width: "100%",
-    alignSelf: "center",
-    paddingHorizontal: 20,
-  },
-  titulo: {
-    color: cores.textoPrincipal,
-    fontSize: 36,
-    fontWeight: "700",
-    marginBottom: 20,
-  },
-  subtitulo: {
-    color: cores.textoPrincipal,
-    fontSize: 20,
-    fontWeight: "600",
-    marginBottom: 32,
-  },
-  linha: {
-    flexDirection: "row",
-    gap: 12,
-    marginBottom: 28,
-  },
-  cartaoFlex: {
-    flex: 1,
-  },
-  grade: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    columnGap: ESPACO,
-    rowGap: 32,
-  },
-});
+const criarEstilos = (cores: Cores) =>
+  StyleSheet.create({
+    tela: {
+      flex: 1,
+      backgroundColor: cores.fundo,
+    },
+    conteudo: {
+      width: "100%",
+      alignSelf: "center",
+      paddingHorizontal: 20,
+    },
+    titulo: {
+      color: cores.textoPrincipal,
+      fontSize: 36,
+      fontWeight: "700",
+      marginBottom: 20,
+    },
+    subtitulo: {
+      color: cores.textoPrincipal,
+      fontSize: 20,
+      fontWeight: "600",
+      marginBottom: 32,
+    },
+    linha: {
+      flexDirection: "row",
+      gap: 12,
+      marginBottom: 28,
+    },
+    cartaoFlex: {
+      flex: 1,
+    },
+    grade: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      columnGap: ESPACO,
+      rowGap: 32,
+    },
+  });
