@@ -1,6 +1,8 @@
+import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { cores } from "../../theme/cores";
+import { useTema } from "../../theme/TemaContext";
+import type { Cores } from "../../theme/temas";
 
 type Props = {
   titulo: string;
@@ -17,6 +19,9 @@ export function CartaoAviso({
   onPress,
   grande = false,
 }: Props) {
+  const { cores } = useTema();
+  const styles = useMemo(() => criarEstilos(cores), [cores]);
+
   return (
     <Pressable
       onPress={onPress}
@@ -42,50 +47,51 @@ export function CartaoAviso({
   );
 }
 
-const styles = StyleSheet.create({
-  cartao: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    backgroundColor: cores.superficie,
-    borderWidth: 1,
-    borderColor: cores.borda,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
-  },
-  cartaoGrande: {
-    gap: 16,
-    borderRadius: 20,
-    padding: 28,
-    marginBottom: 28,
-  },
-  pressionado: {
-    opacity: 0.8,
-  },
-  textos: {
-    flex: 1,
-    gap: 8,
-  },
-  titulo: {
-    color: cores.textoPrincipal,
-    fontSize: 20,
-    fontWeight: "700",
-  },
-  tituloGrande: {
-    fontSize: 24,
-  },
-  acao: {
-    color: cores.textoSecundario,
-    fontSize: 15,
-  },
-  acaoGrande: {
-    fontSize: 17,
-  },
-  emoji: {
-    fontSize: 56,
-  },
-  emojiGrande: {
-    fontSize: 72,
-  },
-});
+const criarEstilos = (cores: Cores) =>
+  StyleSheet.create({
+    cartao: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      backgroundColor: cores.superficie,
+      borderWidth: 1,
+      borderColor: cores.borda,
+      borderRadius: 16,
+      padding: 20,
+      marginBottom: 20,
+    },
+    cartaoGrande: {
+      gap: 16,
+      borderRadius: 20,
+      padding: 28,
+      marginBottom: 28,
+    },
+    pressionado: {
+      opacity: 0.8,
+    },
+    textos: {
+      flex: 1,
+      gap: 8,
+    },
+    titulo: {
+      color: cores.textoPrincipal,
+      fontSize: 20,
+      fontWeight: "700",
+    },
+    tituloGrande: {
+      fontSize: 24,
+    },
+    acao: {
+      color: cores.textoSecundario,
+      fontSize: 15,
+    },
+    acaoGrande: {
+      fontSize: 17,
+    },
+    emoji: {
+      fontSize: 56,
+    },
+    emojiGrande: {
+      fontSize: 72,
+    },
+  });
