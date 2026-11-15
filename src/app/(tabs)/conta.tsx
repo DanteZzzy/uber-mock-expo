@@ -1,4 +1,5 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BotaoAcaoRapida from '../../components/BotaoAcaoRapida';
@@ -6,6 +7,8 @@ import CabecalhoConta from '../../components/CabecalhoConta';
 import CardPromocional from '../../components/CardPromocional';
 import LinhaPerfil from '../../components/LinhaPerfil';
 import StatusBadges from '../../components/StatusBadges';
+import { useTema } from '../../theme/TemaContext';
+import type { Cores } from '../../theme/temas';
 
 const USUARIO_MOCK = {
   nome: 'Marcos Andrade Ferreira',
@@ -23,6 +26,8 @@ const ACOES_RAPIDAS = [
 
 export default function Conta() {
   const insets = useSafeAreaInsets();
+  const { cores } = useTema();
+  const styles = useMemo(() => criarEstilos(cores), [cores]);
 
   return (
     <ScrollView
@@ -42,36 +47,37 @@ export default function Conta() {
       <CardPromocional
         titulo="Travel Pass"
         descricao="Economia na partida no aeroporto e muito mais ao viajar"
-        rightSlot={<Ionicons name="pricetag" size={28} color="#000" />}
+        rightSlot={<Ionicons name="pricetag" size={28} color={cores.textoPrincipal} />}
       />
       <CardPromocional
         titulo="Pacote Moto Flex"
         descricao="Economize 20% nas viagens do Uber Moto"
-        rightSlot={<MaterialCommunityIcons name="moped" size={28} color="#000" />}
+        rightSlot={<MaterialCommunityIcons name="moped" size={28} color={cores.textoPrincipal} />}
       />
       <CardPromocional
         titulo="Economize nas suas viagens"
         descricao="Evite picos de preço. Experimente grátis o preço fixo."
-        rightSlot={<Ionicons name="map" size={28} color="#000" />}
+        rightSlot={<Ionicons name="map" size={28} color={cores.textoPrincipal} />}
       />
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-  content: {
-    paddingHorizontal: 20,
-    paddingBottom: 110, // espaço extra pra não colidir com a navbar flutuante
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    rowGap: 12,
-    marginTop: 12,
-  },
-});
+const criarEstilos = (cores: Cores) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: cores.fundo,
+    },
+    content: {
+      paddingHorizontal: 20,
+      paddingBottom: 110, // espaço extra pra não colidir com a navbar flutuante
+    },
+    grid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+      rowGap: 12,
+      marginTop: 12,
+    },
+  });
