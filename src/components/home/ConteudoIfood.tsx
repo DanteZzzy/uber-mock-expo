@@ -1,6 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { cores } from '../../theme/cores';
+import { useTema } from '../../theme/TemaContext';
+import type { Cores } from '../../theme/temas';
 import AtalhoCircular from '../AtalhoCircular';
 import BannerPromo from '../BannerPromo';
 import CampoBusca from '../CampoBusca';
@@ -39,6 +41,9 @@ const RESTAURANTES_CUPOM = [
 ];
 
 export default function ConteudoIfood() {
+  const { cores } = useTema();
+  const styles = useMemo(() => criarEstilos(cores), [cores]);
+
   return (
     <>
       <View style={styles.localizacao}>
@@ -111,72 +116,73 @@ export default function ConteudoIfood() {
   );
 }
 
-const styles = StyleSheet.create({
-  localizacao: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 4,
-  },
-  localizacaoTexto: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  localizacaoLabel: {
-    color: cores.textoPrincipal,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  menuBotao: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: cores.superficieClara,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    rowGap: 20,
-    columnGap: 12,
-    marginTop: 20,
-  },
-  bannersScroll: {
-    gap: 12,
-    marginTop: 20,
-    paddingRight: 8,
-  },
-  cardsQuadradosScroll: {
-    gap: 10,
-    marginTop: 14,
-    paddingRight: 8,
-  },
-  secaoHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    marginTop: 24,
-    marginBottom: 12,
-  },
-  secaoTitulo: {
-    color: cores.textoPrincipal,
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  secaoAd: {
-    color: cores.textoSecundario,
-    fontSize: 12,
-    marginTop: 2,
-  },
-  verMais: {
-    color: cores.destaque,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  restaurantesScroll: {
-    gap: 14,
-    paddingRight: 8,
-  },
-});
+const criarEstilos = (cores: Cores) =>
+  StyleSheet.create({
+    localizacao: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginTop: 4,
+    },
+    localizacaoTexto: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    localizacaoLabel: {
+      color: cores.textoPrincipal,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+    menuBotao: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: cores.superficieClara,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    grid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      rowGap: 20,
+      columnGap: 12,
+      marginTop: 20,
+    },
+    bannersScroll: {
+      gap: 12,
+      marginTop: 20,
+      paddingRight: 8,
+    },
+    cardsQuadradosScroll: {
+      gap: 10,
+      marginTop: 14,
+      paddingRight: 8,
+    },
+    secaoHeader: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      justifyContent: 'space-between',
+      marginTop: 24,
+      marginBottom: 12,
+    },
+    secaoTitulo: {
+      color: cores.textoPrincipal,
+      fontSize: 18,
+      fontWeight: '800',
+    },
+    secaoAd: {
+      color: cores.textoSecundario,
+      fontSize: 12,
+      marginTop: 2,
+    },
+    verMais: {
+      color: cores.destaque,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+    restaurantesScroll: {
+      gap: 14,
+      paddingRight: 8,
+    },
+  });
