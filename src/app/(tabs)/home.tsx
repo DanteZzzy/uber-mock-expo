@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { cores } from '../../theme/cores';
+import { useTema } from '../../theme/TemaContext';
+import type { Cores } from '../../theme/temas';
 import AbasTopo, { AbaId } from '../../components/AbasTopo';
 import ConteudoUber from '../../components/home/ConteudoUber';
 import ConteudoEnvios from '../../components/home/ConteudoEnvios';
@@ -10,6 +11,8 @@ import ConteudoIfood from '../../components/home/ConteudoIfood';
 export default function Home() {
   const [abaSelecionada, setAbaSelecionada] = useState<AbaId>('uber');
   const insets = useSafeAreaInsets();
+  const { cores } = useTema();
+  const styles = useMemo(() => criarEstilos(cores), [cores]);
 
   return (
     <ScrollView
@@ -25,13 +28,14 @@ export default function Home() {
   );
 }
 
-const styles = StyleSheet.create({
-  tela: {
-    flex: 1,
-    backgroundColor: cores.fundo,
-  },
-  conteudo: {
-    paddingHorizontal: 16,
-    paddingBottom: 100, // espaço pra não colidir com a navbar flutuante
-  },
-});
+const criarEstilos = (cores: Cores) =>
+  StyleSheet.create({
+    tela: {
+      flex: 1,
+      backgroundColor: cores.fundo,
+    },
+    conteudo: {
+      paddingHorizontal: 16,
+      paddingBottom: 100, // espaço pra não colidir com a navbar flutuante
+    },
+  });
