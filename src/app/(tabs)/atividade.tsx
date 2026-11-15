@@ -13,7 +13,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CartaoAviso } from "../../components/atividade/CartaoAviso";
 import { CartaoDestaque } from "../../components/atividade/CartaoDestaque";
 import { ItemAtividade } from "../../components/atividade/ItemAtividade";
-import { BotaoTema } from "../../components/BotaoTema";
 import {
   atividadeDestaque,
   atividadesAnteriores,
@@ -39,10 +38,7 @@ export default function Atividade() {
       }}
     >
       <View style={[styles.conteudo, { maxWidth: duasColunas ? 1080 : 480 }]}>
-        <View style={styles.linhaTitulo}>
-          <Text style={styles.titulo}>Atividade</Text>
-          <BotaoTema />
-        </View>
+        <Text style={styles.titulo}>Atividade</Text>
 
         <View style={styles.cabecalhoSecao}>
           <Text style={styles.secao}>Anteriores</Text>
@@ -87,16 +83,11 @@ const criarEstilos = (cores: Cores) =>
       alignSelf: "center",
       paddingHorizontal: 20,
     },
-    linhaTitulo: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      marginBottom: 24,
-    },
     titulo: {
       color: cores.textoPrincipal,
       fontSize: 36,
       fontWeight: "700",
+      marginBottom: 24,
     },
     cabecalhoSecao: {
       flexDirection: "row",
