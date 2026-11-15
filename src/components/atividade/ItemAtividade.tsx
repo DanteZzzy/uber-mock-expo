@@ -1,7 +1,9 @@
+import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import type { Atividade } from "../../data/atividades";
-import { cores } from "../../theme/cores";
+import { useTema } from "../../theme/TemaContext";
+import type { Cores } from "../../theme/temas";
 import { BotaoPilula } from "../BotaoPilula";
 
 type Props = {
@@ -15,6 +17,8 @@ export function ItemAtividade({
   onReagendar,
   grande = false,
 }: Props) {
+  const { cores } = useTema();
+  const styles = useMemo(() => criarEstilos(cores), [cores]);
   const { destino, data, valor, detalhe } = atividade;
 
   return (
@@ -44,53 +48,54 @@ export function ItemAtividade({
   );
 }
 
-const styles = StyleSheet.create({
-  item: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 12,
-  },
-  itemGrande: {
-    gap: 16,
-    paddingVertical: 16,
-  },
-  miniatura: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    backgroundColor: cores.superficie,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  miniaturaGrande: {
-    width: 80,
-    height: 80,
-    borderRadius: 12,
-  },
-  emoji: {
-    fontSize: 28,
-  },
-  emojiGrande: {
-    fontSize: 38,
-  },
-  textos: {
-    flex: 1,
-    gap: 2,
-  },
-  destino: {
-    color: cores.textoPrincipal,
-    fontSize: 18,
-    fontWeight: "600",
-  },
-  destinoGrande: {
-    fontSize: 21,
-  },
-  detalhe: {
-    color: cores.textoSecundario,
-    fontSize: 15,
-  },
-  detalheGrande: {
-    fontSize: 17,
-  },
-});
+const criarEstilos = (cores: Cores) =>
+  StyleSheet.create({
+    item: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      paddingVertical: 12,
+    },
+    itemGrande: {
+      gap: 16,
+      paddingVertical: 16,
+    },
+    miniatura: {
+      width: 60,
+      height: 60,
+      borderRadius: 8,
+      backgroundColor: cores.superficie,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    miniaturaGrande: {
+      width: 80,
+      height: 80,
+      borderRadius: 12,
+    },
+    emoji: {
+      fontSize: 28,
+    },
+    emojiGrande: {
+      fontSize: 38,
+    },
+    textos: {
+      flex: 1,
+      gap: 2,
+    },
+    destino: {
+      color: cores.textoPrincipal,
+      fontSize: 18,
+      fontWeight: "600",
+    },
+    destinoGrande: {
+      fontSize: 21,
+    },
+    detalhe: {
+      color: cores.textoSecundario,
+      fontSize: 15,
+    },
+    detalheGrande: {
+      fontSize: 17,
+    },
+  });
