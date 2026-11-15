@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { cores } from '../theme/cores';
+import { useTema } from '../theme/TemaContext';
+import type { Cores } from '../theme/temas';
 
 type LinhaAcaoQuadradaProps = {
   icon: keyof typeof Ionicons.glyphMap;
@@ -10,6 +11,9 @@ type LinhaAcaoQuadradaProps = {
 };
 
 export default function LinhaAcaoQuadrada({ icon, titulo, onPress }: LinhaAcaoQuadradaProps) {
+  const { cores } = useTema();
+  const styles = useMemo(() => criarEstilos(cores), [cores]);
+
   return (
     <TouchableOpacity style={styles.row} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.iconeWrapper}>
@@ -21,25 +25,26 @@ export default function LinhaAcaoQuadrada({ icon, titulo, onPress }: LinhaAcaoQu
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 14,
-  },
-  iconeWrapper: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    backgroundColor: cores.superficieClara,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  titulo: {
-    flex: 1,
-    color: cores.textoPrincipal,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-});
+const criarEstilos = (cores: Cores) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      paddingVertical: 14,
+    },
+    iconeWrapper: {
+      width: 40,
+      height: 40,
+      borderRadius: 10,
+      backgroundColor: cores.superficieClara,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    titulo: {
+      flex: 1,
+      color: cores.textoPrincipal,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+  });
