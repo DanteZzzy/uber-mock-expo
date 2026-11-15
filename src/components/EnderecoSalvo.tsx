@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { cores } from '../theme/cores';
+import { useTema } from '../theme/TemaContext';
+import type { Cores } from '../theme/temas';
 
 type EnderecoSalvoProps = {
   titulo: string;
@@ -10,6 +11,9 @@ type EnderecoSalvoProps = {
 };
 
 export default function EnderecoSalvo({ titulo, subtitulo, onPress }: EnderecoSalvoProps) {
+  const { cores } = useTema();
+  const styles = useMemo(() => criarEstilos(cores), [cores]);
+
   return (
     <TouchableOpacity style={styles.row} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.iconeWrapper}>
@@ -28,32 +32,33 @@ export default function EnderecoSalvo({ titulo, subtitulo, onPress }: EnderecoSa
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
-    gap: 12,
-  },
-  iconeWrapper: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: cores.superficieClara,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  textos: {
-    flex: 1,
-  },
-  titulo: {
-    color: cores.textoPrincipal,
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  subtitulo: {
-    color: cores.textoSecundario,
-    fontSize: 13,
-    marginTop: 2,
-  },
-});
+const criarEstilos = (cores: Cores) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 14,
+      gap: 12,
+    },
+    iconeWrapper: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: cores.superficieClara,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    textos: {
+      flex: 1,
+    },
+    titulo: {
+      color: cores.textoPrincipal,
+      fontSize: 15,
+      fontWeight: '700',
+    },
+    subtitulo: {
+      color: cores.textoSecundario,
+      fontSize: 13,
+      marginTop: 2,
+    },
+  });
