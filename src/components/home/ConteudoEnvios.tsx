@@ -1,6 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { cores } from '../../theme/cores';
+import { useTema } from '../../theme/TemaContext';
+import type { Cores } from '../../theme/temas';
 import CampoBusca from '../CampoBusca';
 import LinhaAcaoQuadrada from '../LinhaAcaoQuadrada';
 import PillBotao from '../PillBotao';
@@ -14,6 +16,9 @@ const TAREFAS_RAPIDAS = [
 ] as const;
 
 export default function ConteudoEnvios() {
+  const { cores } = useTema();
+  const styles = useMemo(() => criarEstilos(cores), [cores]);
+
   return (
     <>
       <CampoBusca placeholder="Entregar neste endereço?" />
@@ -51,57 +56,58 @@ export default function ConteudoEnvios() {
   );
 }
 
-const styles = StyleSheet.create({
-  secaoSobDemanda: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 24,
-  },
-  textoSobDemanda: {
-    flex: 1,
-    marginRight: 12,
-  },
-  tituloSobDemanda: {
-    color: cores.textoPrincipal,
-    fontSize: 20,
-    fontWeight: '800',
-    marginBottom: 4,
-  },
-  subtituloSobDemanda: {
-    color: cores.textoSecundario,
-    fontSize: 14,
-  },
-  iconeSobDemanda: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: cores.superficieClara,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  card: {
-    backgroundColor: cores.superficie,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: cores.borda,
-    paddingHorizontal: 14,
-    marginTop: 16,
-  },
-  divisor: {
-    height: 1,
-    backgroundColor: cores.borda,
-  },
-  secaoTitulo: {
-    color: cores.textoPrincipal,
-    fontSize: 20,
-    fontWeight: '800',
-    marginTop: 24,
-    marginBottom: 12,
-  },
-  pillsWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-});
+const criarEstilos = (cores: Cores) =>
+  StyleSheet.create({
+    secaoSobDemanda: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginTop: 24,
+    },
+    textoSobDemanda: {
+      flex: 1,
+      marginRight: 12,
+    },
+    tituloSobDemanda: {
+      color: cores.textoPrincipal,
+      fontSize: 20,
+      fontWeight: '800',
+      marginBottom: 4,
+    },
+    subtituloSobDemanda: {
+      color: cores.textoSecundario,
+      fontSize: 14,
+    },
+    iconeSobDemanda: {
+      width: 56,
+      height: 56,
+      borderRadius: 16,
+      backgroundColor: cores.superficieClara,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    card: {
+      backgroundColor: cores.superficie,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: cores.borda,
+      paddingHorizontal: 14,
+      marginTop: 16,
+    },
+    divisor: {
+      height: 1,
+      backgroundColor: cores.borda,
+    },
+    secaoTitulo: {
+      color: cores.textoPrincipal,
+      fontSize: 20,
+      fontWeight: '800',
+      marginTop: 24,
+      marginBottom: 12,
+    },
+    pillsWrap: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 10,
+    },
+  });
