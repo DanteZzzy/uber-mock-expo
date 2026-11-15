@@ -9,7 +9,13 @@ import CampoBusca from '../CampoBusca';
 import CardQuadradoPromo from '../CardQuadradoPromo';
 import CardRestaurante from '../CardRestaurante';
 
-const CATEGORIAS = [
+type CategoriaItem = {
+  label: string;
+  icon: string;
+  badge?: string;
+};
+
+const CATEGORIAS: readonly CategoriaItem[] = [
   { label: 'Restaurantes', icon: 'restaurant-outline' },
   { label: 'Mercados', icon: 'basket-outline' },
   { label: 'Farmácias', icon: 'medkit-outline' },
