@@ -1,6 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
-import { cores } from '../theme/cores';
+import { useTema } from '../theme/TemaContext';
+import type { Cores } from '../theme/temas';
 
 type LinhaPerfilProps = {
   label: string;
@@ -8,6 +10,9 @@ type LinhaPerfilProps = {
 };
 
 export default function LinhaPerfil({ label, onPress }: LinhaPerfilProps) {
+  const { cores } = useTema();
+  const styles = useMemo(() => criarEstilos(cores), [cores]);
+
   return (
     <TouchableOpacity style={styles.row} onPress={onPress} activeOpacity={0.7}>
       <Ionicons name="person-outline" size={18} color={cores.textoPrincipal} style={styles.icon} />
@@ -17,26 +22,27 @@ export default function LinhaPerfil({ label, onPress }: LinhaPerfilProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: cores.superficieClara,
-    borderRadius: 14,
-    paddingVertical: 18,
-    paddingHorizontal: 16,
-    marginTop: 24,
-  },
-  icon: {
-    marginRight: 8,
-  },
-  label: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '600',
-    color: cores.textoPrincipal,
-  },
-  chevron: {
-    marginLeft: 8,
-  },
-});
+const criarEstilos = (cores: Cores) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: cores.superficieClara,
+      borderRadius: 14,
+      paddingVertical: 18,
+      paddingHorizontal: 16,
+      marginTop: 24,
+    },
+    icon: {
+      marginRight: 8,
+    },
+    label: {
+      flex: 1,
+      fontSize: 16,
+      fontWeight: '600',
+      color: cores.textoPrincipal,
+    },
+    chevron: {
+      marginLeft: 8,
+    },
+  });
