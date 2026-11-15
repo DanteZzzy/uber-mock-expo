@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   Pressable,
   StyleProp,
@@ -8,7 +9,8 @@ import {
 } from "react-native";
 
 import type { Opcao } from "../../data/opcoes";
-import { cores } from "../../theme/cores";
+import { useTema } from "../../theme/TemaContext";
+import type { Cores } from "../../theme/temas";
 
 type Props = {
   opcao: Opcao;
@@ -17,6 +19,9 @@ type Props = {
 };
 
 export function CartaoOpcao({ opcao, onPress, style }: Props) {
+  const { cores } = useTema();
+  const styles = useMemo(() => criarEstilos(cores), [cores]);
+
   return (
     <Pressable
       onPress={onPress}
@@ -38,38 +43,39 @@ export function CartaoOpcao({ opcao, onPress, style }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  cartao: {
-    height: 104,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    backgroundColor: cores.superficie,
-    borderRadius: 16,
-  },
-  pressionado: {
-    opacity: 0.8,
-  },
-  selo: {
-    position: "absolute",
-    top: -12,
-    alignSelf: "center",
-    backgroundColor: cores.destaque,
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  textoSelo: {
-    color: "#fff",
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  emoji: {
-    fontSize: 36,
-  },
-  titulo: {
-    color: cores.textoPrincipal,
-    fontSize: 16,
-    fontWeight: "500",
-  },
-});
+const criarEstilos = (cores: Cores) =>
+  StyleSheet.create({
+    cartao: {
+      height: 104,
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      backgroundColor: cores.superficie,
+      borderRadius: 16,
+    },
+    pressionado: {
+      opacity: 0.8,
+    },
+    selo: {
+      position: "absolute",
+      top: -12,
+      alignSelf: "center",
+      backgroundColor: cores.destaque,
+      borderRadius: 6,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+    },
+    textoSelo: {
+      color: "#fff",
+      fontSize: 13,
+      fontWeight: "600",
+    },
+    emoji: {
+      fontSize: 36,
+    },
+    titulo: {
+      color: cores.textoPrincipal,
+      fontSize: 16,
+      fontWeight: "500",
+    },
+  });
