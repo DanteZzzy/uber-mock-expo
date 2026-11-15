@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { cores } from '../theme/cores';
+import { useTema } from '../theme/TemaContext';
+import type { Cores } from '../theme/temas';
 
 export type AbaId = 'uber' | 'envios' | 'ifood';
 
@@ -23,6 +24,9 @@ type AbasTopoProps = {
 };
 
 export default function AbasTopo({ abaSelecionada, onSelecionar }: AbasTopoProps) {
+  const { cores } = useTema();
+  const styles = useMemo(() => criarEstilos(cores), [cores]);
+
   return (
     <View style={styles.row}>
       {ABAS.map((aba) => {
@@ -50,36 +54,37 @@ export default function AbasTopo({ abaSelecionada, onSelecionar }: AbasTopoProps
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    gap: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: cores.borda,
-    paddingBottom: 10,
-  },
-  abaWrapper: {
-    alignItems: 'center',
-  },
-  aba: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  label: {
-    fontSize: 15,
-    color: cores.textoSecundario,
-    fontWeight: '600',
-  },
-  labelAtiva: {
-    color: cores.textoPrincipal,
-    fontWeight: '800',
-  },
-  indicador: {
-    marginTop: 8,
-    height: 2,
-    width: '100%',
-    backgroundColor: cores.textoPrincipal,
-    borderRadius: 1,
-  },
-});
+const criarEstilos = (cores: Cores) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      gap: 24,
+      borderBottomWidth: 1,
+      borderBottomColor: cores.borda,
+      paddingBottom: 10,
+    },
+    abaWrapper: {
+      alignItems: 'center',
+    },
+    aba: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    label: {
+      fontSize: 15,
+      color: cores.textoSecundario,
+      fontWeight: '600',
+    },
+    labelAtiva: {
+      color: cores.textoPrincipal,
+      fontWeight: '800',
+    },
+    indicador: {
+      marginTop: 8,
+      height: 2,
+      width: '100%',
+      backgroundColor: cores.textoPrincipal,
+      borderRadius: 1,
+    },
+  });
