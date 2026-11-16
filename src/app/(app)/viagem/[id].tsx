@@ -47,11 +47,12 @@ export default function DetalheViagem() {
   return (
     <ScrollView style={styles.tela} contentContainerStyle={styles.conteudo}>
       <View style={styles.coluna}>
-        <View style={styles.miniatura}>
-          <Text style={styles.emoji}>🚗</Text>
+        <View style={styles.cabecalho}>
+          <View style={styles.miniatura}>
+            <Text style={styles.emoji}>🚗</Text>
+          </View>
+          <Text style={styles.titulo}>{atividade.destino}</Text>
         </View>
-
-        <Text style={styles.titulo}>{atividade.destino}</Text>
 
         {linhas.map((linha) => (
           <View key={linha.rotulo} style={styles.linha}>
@@ -59,13 +60,6 @@ export default function DetalheViagem() {
             <Text style={styles.valor}>{linha.valor}</Text>
           </View>
         ))}
-
-        <BotaoPilula
-          titulo="Voltar"
-          icone="arrow-back"
-          onPress={() => router.back()}
-          style={styles.botao}
-        />
       </View>
     </ScrollView>
   );
@@ -94,6 +88,9 @@ const criarEstilos = (cores: Cores) =>
       gap: 16,
       backgroundColor: cores.fundo,
     },
+    cabecalho: {
+      alignItems: "center",
+    },
     miniatura: {
       width: 80,
       height: 80,
@@ -109,6 +106,7 @@ const criarEstilos = (cores: Cores) =>
       color: cores.textoPrincipal,
       fontSize: 28,
       fontWeight: "700",
+      textAlign: "center",
       marginTop: 16,
       marginBottom: 24,
     },
@@ -127,9 +125,5 @@ const criarEstilos = (cores: Cores) =>
       color: cores.textoPrincipal,
       fontSize: 16,
       fontWeight: "600",
-    },
-    botao: {
-      alignSelf: "flex-start",
-      marginTop: 28,
     },
   });
