@@ -22,7 +22,17 @@ export function BotaoSair() {
     <View style={styles.bloco}>
       <Pressable
         onPress={aoSair}
-        style={({ pressed }) => [styles.botao, pressed && styles.pressionado]}
+        style={({
+          pressed,
+          hovered,
+        }: {
+          pressed: boolean;
+          hovered?: boolean;
+        }) => [
+          styles.botao,
+          (hovered || pressed) && styles.destacado,
+          pressed && styles.pressionado,
+        ]}
       >
         <Ionicons name="log-out-outline" size={22} color={cores.destaque} />
         <Text style={styles.texto}>Sair</Text>
@@ -50,6 +60,9 @@ const criarEstilos = (cores: Cores) =>
       borderColor: cores.borda,
       borderRadius: 12,
       paddingVertical: 14,
+    },
+    destacado: {
+      borderColor: cores.destaque,
     },
     pressionado: {
       opacity: 0.8,
