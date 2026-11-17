@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ScrollView, StyleSheet } from "react-native";
+import { RefreshControl, ScrollView, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AbasTopo, { AbaId } from "../../../components/AbasTopo";
 import ConteudoEnvios from "../../../components/home/ConteudoEnvios";
@@ -17,12 +17,28 @@ export default function Home() {
   const styles = useMemo(() => criarEstilos(cores), [cores]);
   // a Home busca os motoristas na API e repassa o resultado para a aba Uber
   const motoristas = useFetch(api.usuarios);
-  
+    const [atualizando, setAtualizando] = useState(false);
+
+  async function aoAtualizar() {
+    setAtualizando(true);
+    await motoristas.atualizar();
+    setAtualizando(false);
+  }
+
   return (
     <ScrollView
       style={styles.tela}
       contentContainerStyle={[styles.conteudo, { paddingTop: insets.top + 12 }]}
     >
+            refreshControl={
+        abaSelecionada === "uber" ? (
+          <RefreshControl
+            refreshing={atualizando}
+            onRefresh={aoAtualizar}
+            tintColor={cores.textoPrincipal}
+          />
+        ) : undefined
+      }
       <AbasTopo
         abaSelecionada={abaSelecionada}
         onSelecionar={setAbaSelecionada}
