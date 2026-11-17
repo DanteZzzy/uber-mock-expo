@@ -30,6 +30,14 @@ export default function AppLayout() {
         name="motorista/[id]"
         options={{ title: "Detalhes do motorista", headerBackTitle: "Voltar" }}
       />
+      <Stack.Screen
+        name="avaliar/[id]"
+        options={{
+          presentation: "modal",
+          title: "Avaliar motorista",
+          headerBackTitle: "Fechar",
+        }}
+      />
     </Stack>
   );
 }
