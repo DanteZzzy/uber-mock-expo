@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useMemo } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import EstadoCarregando from "../../../components/EstadoCarregando";
 import EstadoErro from "../../../components/EstadoErro";
@@ -9,6 +9,7 @@ import { useFetch } from "../../../hooks/useFetch";
 import { api } from "../../../services/api";
 import { useTema } from "../../../theme/TemaContext";
 import type { Cores } from "../../../theme/temas";
+import { iniciais } from "../../../utils/iniciais";
 
 export default function DetalheMotorista() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -43,9 +44,16 @@ export default function DetalheMotorista() {
   }
 
   return (
-    <View style={styles.tela}>
-      <Text style={styles.texto}>Motorista ID: {motorista.id}</Text>
-    </View>
+    <ScrollView style={styles.tela} contentContainerStyle={styles.conteudo}>
+      <View style={styles.coluna}>
+        <View style={styles.cabecalho}>
+          <View style={styles.avatar}>
+            <Text style={styles.iniciais}>{iniciais(motorista.name)}</Text>
+          </View>
+          <Text style={styles.nome}>{motorista.name}</Text>
+        </View>
+      </View>
+    </ScrollView>
   );
 }
 
@@ -54,7 +62,16 @@ const criarEstilos = (cores: Cores) =>
     tela: {
       flex: 1,
       backgroundColor: cores.fundo,
-      padding: 16,
+    },
+    conteudo: {
+      paddingTop: 24,
+      paddingBottom: 40,
+      paddingHorizontal: 20,
+    },
+    coluna: {
+      width: "100%",
+      maxWidth: 480,
+      alignSelf: "center",
     },
     telaCentralizada: {
       flex: 1,
@@ -62,8 +79,28 @@ const criarEstilos = (cores: Cores) =>
       alignItems: "center",
       justifyContent: "center",
     },
-    texto: {
+    cabecalho: {
+      alignItems: "center",
+      marginBottom: 24,
+    },
+    avatar: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      backgroundColor: cores.superficieClara,
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: 16,
+    },
+    iniciais: {
       color: cores.textoPrincipal,
-      fontSize: 16,
+      fontSize: 28,
+      fontWeight: "800",
+    },
+    nome: {
+      color: cores.textoPrincipal,
+      fontSize: 24,
+      fontWeight: "700",
+      textAlign: "center",
     },
   });
