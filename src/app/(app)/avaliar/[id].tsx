@@ -1,7 +1,9 @@
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -16,6 +18,7 @@ import type { Cores } from "../../../theme/temas";
 
 export default function AvaliarMotorista() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
   const { cores } = useTema();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
 
@@ -24,7 +27,15 @@ export default function AvaliarMotorista() {
   const [enviando, setEnviando] = useState(false);
 
   async function submeter() {
-    if (!titulo.trim() || !comentario.trim() || enviando) return;
+    if (!titulo.trim() || !comentario.trim()) {
+      Alert.alert(
+        "Campos obrigatórios",
+        "Por favor, preencha o título e o comentário da avaliação.",
+      );
+      return;
+    }
+
+    if (enviando) return;
 
     setEnviando(true);
     try {
@@ -33,8 +44,24 @@ export default function AvaliarMotorista() {
         body: comentario.trim(),
         userId: Number(id),
       });
-    } catch {
-      // tratamento com Alert na tarefa 38
+
+      Alert.alert("Sucesso", "Sua avaliação foi enviada com sucesso!", [
+        {
+          text: "OK",
+          onPress: () => router.back(),
+        },
+      ]);
+
+      if (Platform.OS === "web") {
+        router.back();
+      }
+    } catch (erro) {
+      Alert.alert(
+        "Erro ao enviar",
+        erro instanceof Error
+          ? erro.message
+          : "Não foi possível enviar a avaliação. Tente novamente.",
+      );
     } finally {
       setEnviando(false);
     }
