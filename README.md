@@ -2,24 +2,44 @@
 
 Aplicativo mockado do Uber, desenvolvido em React Native com Expo, como trabalho da disciplina **Laboratório de Desenvolvimento de App Híbrido**.
 
-O objetivo do projeto não é reproduzir o backend ou a lógica real do app, e sim reconstruir a interface e a navegação entre as telas, com dados fictícios.
+O objetivo do projeto não é reproduzir o backend ou a lógica real do app, e sim reconstruir a interface e a navegação entre as telas, com dados fictícios e integração com API REST.
 
 ## 📱 Sobre o projeto
 
 - **Framework:** React Native + Expo (Expo Router)
 - **Linguagem:** TypeScript
-- **Navegação:** Stack raiz + grupos `(auth)` e `(app)` + Tabs (Página inicial, Opções, Atividade, Conta)
+- **Navegação:** Stack raiz + grupos `(auth)` e `(app)` + Tabs (Página inicial, Opções, Atividade, Conta) + Modais e Telas de Detalhes
 - **Autenticação simulada:** `AuthContext` com rotas protegidas via `Redirect`
 - **Tema:** claro e escuro, com a escolha salva no aparelho (AsyncStorage)
-- **Dados:** mockados localmente, sem backend ou API externa
+- **Consumo de API:** REST API pública com `fetch`, timeout e tratamento de erros
 
 ## ✨ Funcionalidades
 
 - **Login protegido:** sem entrar, nenhuma tela do app abre (quem tenta acessar `/home` é redirecionado ao login)
 - **Entrar e sair:** o login leva à Home sem permitir voltar a ele (`router.replace`), e o botão **Sair**, na tela Conta, encerra a sessão
+- **Motoristas (API):** listagem na Home via `GET /users`, com pull-to-refresh e estados de carregamento, erro e vazio
+- **Detalhes do motorista:** rota dinâmica `motorista/[id]`, buscando dados via `GET /users/:id` com iniciais no avatar, informações de contato e empresa
+- **Avaliar motorista:** modal dinâmico `avaliar/[id]` com envio de avaliação via `POST /posts`, estado de loading no botão e alerta de confirmação
 - **Detalhe da viagem:** rota dinâmica `viagem/[id]`, aberta ao tocar em uma viagem da tela Atividade
 - **Tema claro/escuro:** alternado por um botão na tela Conta, com a escolha mantida ao reabrir o app
 - **Layout responsivo:** versão de celular em telas estreitas e versão com colunas em telas largas (web)
+
+## 🌐 Consumo da API
+
+O aplicativo consome uma API REST para listagem, consulta de detalhes e envio de avaliações dos motoristas.
+
+### Configuração e URL Base
+- **URL Padrão:** `https://jsonplaceholder.typicode.com`
+- **Variável de Ambiente:** configurável através de `EXPO_PUBLIC_API_URL` no arquivo `.env` (exemplo disponível em `.env.example`).
+
+### Endpoints Consumidos
+- `GET /users`: Retorna a lista de motoristas exibidos no carrossel horizontal da tela inicial (`SecaoMotoristas`).
+- `GET /users/:id`: Retorna as informações detalhadas de um motorista específico na tela `motorista/[id]` (e-mail, cidade, telefone, empresa e website).
+- `POST /posts`: Envia a avaliação criada pelo usuário na tela/modal `avaliar/[id]`, enviando payload JSON (`{ title, body, userId }`) com cabeçalho `Content-Type: application/json; charset=UTF-8`.
+
+### Camada de Serviços e Hook `useFetch`
+- **Serviço Centralizado (`src/services/api.ts`):** Todas as chamadas utilizam a função `req<T>`, que implementa verificação de status HTTP (`404 Não encontrado`, erros de rede) e tempo limite de 10 segundos via `AbortController`.
+- **Hook `useFetch` (`src/hooks/useFetch.ts`):** Gerencia reatividade dos estados `dados`, `loading` e `erro`, com suporte a cancelamento ao desmontar a tela, prevenção de respostas fora de ordem (`race conditions`), recarregamento manual (`recarregar`) e pull-to-refresh (`atualizar`).
 
 ## 🖼️ Telas
 
@@ -54,6 +74,8 @@ A Home tem três abas no topo: **Uber**, **Envios** e **iFood**.
 (app)/_layout          → guarda: sem sessão, Redirect para /login
 (app)/(tabs)           → home, opcoes, atividade, conta
 (app)/viagem/[id]      → detalhe da viagem (abre por cima das abas)
+(app)/motorista/[id]   → detalhe do motorista (abre ao tocar no card da Home)
+(app)/avaliar/[id]     → avaliação do motorista (modal aberto a partir do detalhe)
 ```
 
 > A sessão é mantida apenas em memória. Ao fechar o app ou recarregar a página no navegador, é preciso entrar novamente.
@@ -114,8 +136,14 @@ src/
         conta.tsx
       viagem/
         [id].tsx           # Detalhe da viagem (rota dinâmica)
+      motorista/
+        [id].tsx           # Detalhe do motorista (rota dinâmica)
+      avaliar/
+        [id].tsx           # Modal de avaliação do motorista
   components/              # Componentes reutilizáveis
   data/                    # Dados mockados
+  hooks/                   # Hooks customizados (useFetch)
+  services/                # Integração com API REST (api.ts)
   theme/
     cores.ts               # Paleta do tema escuro
     temas.ts               # Paletas clara e escura
