@@ -43,6 +43,14 @@ export default function DetalheMotorista() {
     );
   }
 
+  const linhas = [
+    { rotulo: "E-mail", valor: motorista.email },
+    { rotulo: "Cidade", valor: motorista.address.city },
+    { rotulo: "Telefone", valor: motorista.phone },
+    { rotulo: "Empresa", valor: motorista.company.name },
+    { rotulo: "Site", valor: motorista.website },
+  ];
+
   return (
     <ScrollView style={styles.tela} contentContainerStyle={styles.conteudo}>
       <View style={styles.coluna}>
@@ -52,6 +60,13 @@ export default function DetalheMotorista() {
           </View>
           <Text style={styles.nome}>{motorista.name}</Text>
         </View>
+
+        {linhas.map((linha) => (
+          <View key={linha.rotulo} style={styles.linha}>
+            <Text style={styles.rotulo}>{linha.rotulo}</Text>
+            <Text style={styles.valor}>{linha.valor}</Text>
+          </View>
+        ))}
       </View>
     </ScrollView>
   );
@@ -102,5 +117,25 @@ const criarEstilos = (cores: Cores) =>
       fontSize: 24,
       fontWeight: "700",
       textAlign: "center",
+    },
+    linha: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingVertical: 14,
+      borderBottomWidth: 1,
+      borderBottomColor: cores.borda,
+    },
+    rotulo: {
+      color: cores.textoSecundario,
+      fontSize: 16,
+    },
+    valor: {
+      color: cores.textoPrincipal,
+      fontSize: 16,
+      fontWeight: "600",
+      flexShrink: 1,
+      textAlign: "right",
+      marginLeft: 16,
     },
   });
