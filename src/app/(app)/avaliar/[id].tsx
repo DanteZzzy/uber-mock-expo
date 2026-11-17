@@ -1,6 +1,7 @@
 import { useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -9,6 +10,7 @@ import {
   View,
 } from "react-native";
 
+import { api } from "../../../services/api";
 import { useTema } from "../../../theme/TemaContext";
 import type { Cores } from "../../../theme/temas";
 
@@ -19,9 +21,23 @@ export default function AvaliarMotorista() {
 
   const [titulo, setTitulo] = useState("");
   const [comentario, setComentario] = useState("");
+  const [enviando, setEnviando] = useState(false);
 
-  function submeter() {
-    // Implementação da submissão nas próximas etapas
+  async function submeter() {
+    if (!titulo.trim() || !comentario.trim() || enviando) return;
+
+    setEnviando(true);
+    try {
+      await api.criarPost({
+        title: titulo.trim(),
+        body: comentario.trim(),
+        userId: Number(id),
+      });
+    } catch {
+      // tratamento com Alert na tarefa 38
+    } finally {
+      setEnviando(false);
+    }
   }
 
   return (
@@ -39,6 +55,7 @@ export default function AvaliarMotorista() {
           placeholderTextColor={cores.textoSecundario}
           value={titulo}
           onChangeText={setTitulo}
+          editable={!enviando}
         />
 
         <Text style={styles.rotulo}>Comentário</Text>
@@ -51,10 +68,19 @@ export default function AvaliarMotorista() {
           textAlignVertical="top"
           value={comentario}
           onChangeText={setComentario}
+          editable={!enviando}
         />
 
-        <Pressable style={styles.botao} onPress={submeter}>
-          <Text style={styles.textoBotao}>Enviar avaliação</Text>
+        <Pressable
+          style={[styles.botao, enviando && styles.botaoDesabilitado]}
+          onPress={submeter}
+          disabled={enviando}
+        >
+          {enviando ? (
+            <ActivityIndicator size="small" color={cores.fundo} />
+          ) : (
+            <Text style={styles.textoBotao}>Enviar avaliação</Text>
+          )}
         </Pressable>
       </View>
     </ScrollView>
@@ -115,6 +141,9 @@ const criarEstilos = (cores: Cores) =>
       alignItems: "center",
       justifyContent: "center",
       marginTop: 8,
+    },
+    botaoDesabilitado: {
+      opacity: 0.6,
     },
     textoBotao: {
       color: cores.fundo,
