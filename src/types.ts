@@ -20,3 +20,16 @@ export type Usuario = {
   address: Endereco;
   company: Empresa;
 };
+
+export type Post = {
+  id: number;
+  title: string;
+  body: string;
+  userId: number;
+};
+
+export type NovoPost = {
+  title: string;
+  body: string;
+  userId: number;
+};
