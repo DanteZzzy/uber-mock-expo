@@ -1,3 +1,4 @@
+
 import { useMemo, useState } from "react";
 import { RefreshControl, ScrollView, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -12,25 +13,32 @@ import { api } from "../../../services/api";
 
 export default function Home() {
   const [abaSelecionada, setAbaSelecionada] = useState<AbaId>("uber");
+  const [atualizando, setAtualizando] = useState(false);
+
   const insets = useSafeAreaInsets();
   const { cores } = useTema();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
-  // a Home busca os motoristas na API e repassa o resultado para a aba Uber
+
+  // A Home busca os motoristas na API e repassa o resultado para a aba Uber.
   const motoristas = useFetch(api.usuarios);
-    const [atualizando, setAtualizando] = useState(false);
 
   async function aoAtualizar() {
     setAtualizando(true);
-    await motoristas.atualizar();
-    setAtualizando(false);
+    try {
+      await motoristas.atualizar();
+    } finally {
+      setAtualizando(false);
+    }
   }
 
   return (
     <ScrollView
       style={styles.tela}
-      contentContainerStyle={[styles.conteudo, { paddingTop: insets.top + 12 }]}
-    >
-            refreshControl={
+      contentContainerStyle={[
+        styles.conteudo,
+        { paddingTop: insets.top + 12 },
+      ]}
+      refreshControl={
         abaSelecionada === "uber" ? (
           <RefreshControl
             refreshing={atualizando}
@@ -39,13 +47,18 @@ export default function Home() {
           />
         ) : undefined
       }
+    >
       <AbasTopo
         abaSelecionada={abaSelecionada}
         onSelecionar={setAbaSelecionada}
       />
 
-      {abaSelecionada === "uber" && <ConteudoUber motoristas={motoristas} />}
+      {abaSelecionada === "uber" && (
+        <ConteudoUber motoristas={motoristas} />
+      )}
+
       {abaSelecionada === "envios" && <ConteudoEnvios />}
+
       {abaSelecionada === "ifood" && <ConteudoIfood />}
     </ScrollView>
   );
@@ -59,6 +72,6 @@ const criarEstilos = (cores: Cores) =>
     },
     conteudo: {
       paddingHorizontal: 16,
-      paddingBottom: 100, // espaço pra não colidir com a navbar flutuante
+      paddingBottom: 100,
     },
   });
