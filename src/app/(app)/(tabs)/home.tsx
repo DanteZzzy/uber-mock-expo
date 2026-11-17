@@ -28,7 +28,7 @@ export default function Home() {
         onSelecionar={setAbaSelecionada}
       />
 
-      {abaSelecionada === "uber" && <ConteudoUber />}
+      {abaSelecionada === "uber" && <ConteudoUber motoristas={motoristas} />}
       {abaSelecionada === "envios" && <ConteudoEnvios />}
       {abaSelecionada === "ifood" && <ConteudoIfood />}
     </ScrollView>

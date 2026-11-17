@@ -1,12 +1,20 @@
+
 import { Ionicons } from '@expo/vector-icons';
 import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import type { ResultadoFetch } from '../../hooks/useFetch';
 import { useTema } from '../../theme/TemaContext';
 import type { Cores } from '../../theme/temas';
+import type { Usuario } from '../../types';
 import AtalhoCircular from '../AtalhoCircular';
 import BarraBusca from '../BarraBusca';
 import CardBanner from '../CardBanner';
 import EnderecoSalvo from '../EnderecoSalvo';
+import SecaoMotoristas from '../SecaoMotoristas';
+
+type Props = {
+  motoristas: ResultadoFetch<Usuario[]>;
+};
 
 const ATALHOS = [
   { label: 'Viagem', icon: 'car-sport-outline', badge: '15%' },
@@ -26,7 +34,7 @@ const ENDERECOS_SALVOS = [
   },
 ];
 
-export default function ConteudoUber() {
+export default function ConteudoUber({ motoristas }: Props) {
   const { cores } = useTema();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
 
@@ -37,8 +45,13 @@ export default function ConteudoUber() {
       <View style={styles.cardEnderecos}>
         {ENDERECOS_SALVOS.map((endereco, index) => (
           <React.Fragment key={endereco.titulo}>
-            <EnderecoSalvo titulo={endereco.titulo} subtitulo={endereco.subtitulo} />
-            {index < ENDERECOS_SALVOS.length - 1 && <View style={styles.divisor} />}
+            <EnderecoSalvo
+              titulo={endereco.titulo}
+              subtitulo={endereco.subtitulo}
+            />
+            {index < ENDERECOS_SALVOS.length - 1 && (
+              <View style={styles.divisor} />
+            )}
           </React.Fragment>
         ))}
       </View>
@@ -46,7 +59,11 @@ export default function ConteudoUber() {
       <View style={styles.secaoHeader}>
         <Text style={styles.secaoTitulo}>Para você</Text>
         <TouchableOpacity style={styles.setaCircular} activeOpacity={0.7}>
-          <Ionicons name="arrow-forward" size={16} color={cores.textoPrincipal} />
+          <Ionicons
+            name="arrow-forward"
+            size={16}
+            color={cores.textoPrincipal}
+          />
         </TouchableOpacity>
       </View>
 
@@ -61,6 +78,8 @@ export default function ConteudoUber() {
           />
         ))}
       </View>
+
+      <SecaoMotoristas motoristas={motoristas} />
 
       <CardBanner
         titulo="Ganhe 10% off em 10 viagens, até R$ 15 por viagem!"
