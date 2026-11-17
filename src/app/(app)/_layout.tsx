@@ -26,6 +26,10 @@ export default function AppLayout() {
         name="viagem/[id]"
         options={{ title: "Detalhes da viagem", headerBackTitle: "Voltar" }}
       />
+      <Stack.Screen
+        name="motorista/[id]"
+        options={{ title: "Detalhes do motorista", headerBackTitle: "Voltar" }}
+      />
     </Stack>
   );
 }
