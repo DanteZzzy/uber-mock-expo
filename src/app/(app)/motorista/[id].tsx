@@ -1,6 +1,7 @@
-import { useLocalSearchParams } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useMemo } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import EstadoCarregando from "../../../components/EstadoCarregando";
 import EstadoErro from "../../../components/EstadoErro";
@@ -13,6 +14,7 @@ import { iniciais } from "../../../utils/iniciais";
 
 export default function DetalheMotorista() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
   const { cores } = useTema();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
 
@@ -67,6 +69,14 @@ export default function DetalheMotorista() {
             <Text style={styles.valor}>{linha.valor}</Text>
           </View>
         ))}
+
+        <Pressable
+          style={styles.botaoAvaliar}
+          onPress={() => router.push(`/avaliar/${motorista.id}`)}
+        >
+          <Ionicons name="star-outline" size={18} color={cores.fundo} />
+          <Text style={styles.textoBotaoAvaliar}>Avaliar motorista</Text>
+        </Pressable>
       </View>
     </ScrollView>
   );
@@ -137,5 +147,20 @@ const criarEstilos = (cores: Cores) =>
       flexShrink: 1,
       textAlign: "right",
       marginLeft: 16,
+    },
+    botaoAvaliar: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 8,
+      backgroundColor: cores.textoPrincipal,
+      borderRadius: 12,
+      paddingVertical: 14,
+      marginTop: 28,
+    },
+    textoBotaoAvaliar: {
+      color: cores.fundo,
+      fontSize: 16,
+      fontWeight: "700",
     },
   });
