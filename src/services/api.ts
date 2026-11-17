@@ -7,6 +7,8 @@ const BASE =
 async function req<T>(caminho: string): Promise<T> {
   const resposta = await fetch(BASE + caminho);
 
+    if (resposta.status === 404) throw new Error("Não encontrado");
+
   // fetch só rejeita quando a rede falha: 404 e 500 chegam aqui e precisam ser checados
   if (!resposta.ok) throw new Error(`Falha ${resposta.status}`);
 
