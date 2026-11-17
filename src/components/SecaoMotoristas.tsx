@@ -1,4 +1,4 @@
-
+import { useRouter } from "expo-router";
 import { useMemo } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 
@@ -17,9 +17,14 @@ type Props = {
 };
 
 export default function SecaoMotoristas({ motoristas }: Props) {
+  const router = useRouter();
   const { dados, loading, erro, recarregar } = motoristas;
   const { cores } = useTema();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
+
+  function abrirDetalhe(id: number) {
+    router.push(`/motorista/${id}`);
+  }
 
   return (
     <View style={styles.secao}>
@@ -36,7 +41,9 @@ export default function SecaoMotoristas({ motoristas }: Props) {
           horizontal
           data={dados}
           keyExtractor={(usuario) => String(usuario.id)}
-          renderItem={({ item }) => <CardMotorista usuario={item} />}
+          renderItem={({ item }) => (
+            <CardMotorista usuario={item} onPress={abrirDetalhe} />
+          )}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.lista}
         />
