@@ -1,4 +1,4 @@
-import type { Usuario } from "../types";
+import type { NovoPost, Post, Usuario } from "../types";
 
 // Só variáveis EXPO_PUBLIC_ chegam ao app. Sem o .env, usamos a API pública de testes.
 const BASE =
@@ -6,12 +6,15 @@ const BASE =
 
 const TEMPO_LIMITE_MS = 10000;
 
-async function req<T>(caminho: string): Promise<T> {
+async function req<T>(caminho: string, opcoes?: RequestInit): Promise<T> {
   const controlador = new AbortController();
   const temporizador = setTimeout(() => controlador.abort(), TEMPO_LIMITE_MS);
 
   try {
-    const resposta = await fetch(BASE + caminho, { signal: controlador.signal });
+    const resposta = await fetch(BASE + caminho, {
+      ...opcoes,
+      signal: controlador.signal,
+    });
 
     // fetch só rejeita quando a rede falha: 404 e 500 chegam aqui e precisam ser checados
     if (resposta.status === 404) throw new Error("Não encontrado");
@@ -35,4 +38,12 @@ async function req<T>(caminho: string): Promise<T> {
 export const api = {
   usuarios: () => req<Usuario[]>("/users"),
   usuario: (id: number) => req<Usuario>(`/users/${id}`),
+  criarPost: (dados: NovoPost) =>
+    req<Post>("/posts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json; charset=UTF-8",
+      },
+      body: JSON.stringify(dados),
+    }),
 };
