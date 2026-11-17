@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
@@ -22,6 +23,16 @@ export default function CardMotorista({ usuario }: Props) {
       <Text style={styles.nome} numberOfLines={1}>
         {usuario.name}
       </Text>
+            <View style={styles.linhaCidade}>
+        <Ionicons
+          name="location-outline"
+          size={13}
+          color={cores.textoSecundario}
+        />
+        <Text style={styles.cidade} numberOfLines={1}>
+          {usuario.address.city}
+        </Text>
+      </View>
     </View>
   );
 }
