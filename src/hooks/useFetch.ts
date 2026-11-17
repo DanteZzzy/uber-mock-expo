@@ -22,9 +22,12 @@ export function useFetch<T>(buscar: () => Promise<T>) {
       if (chamada === ultimaChamada.current) setLoading(false);
     }
   }, [buscar]);
-  
-  useEffect(() => {
+
+    useEffect(() => {
     carregar();
+    return () => {
+      ultimaChamada.current += 1; // ao desmontar, ignora respostas que ainda estão a caminho
+    };
   }, [carregar]);
 
   return { dados, loading, erro, recarregar: carregar };
