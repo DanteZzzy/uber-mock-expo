@@ -41,6 +41,32 @@ O aplicativo consome uma API REST para listagem, consulta de detalhes e envio de
 - **Serviço Centralizado (`src/services/api.ts`):** Todas as chamadas utilizam a função `req<T>`, que implementa verificação de status HTTP (`404 Não encontrado`, erros de rede) e tempo limite de 10 segundos via `AbortController`.
 - **Hook `useFetch` (`src/hooks/useFetch.ts`):** Gerencia reatividade dos estados `dados`, `loading` e `erro`, com suporte a cancelamento ao desmontar a tela, prevenção de respostas fora de ordem (`race conditions`), recarregamento manual (`recarregar`) e pull-to-refresh (`atualizar`).
 
+## 🧪 Testando os Estados da Aplicação (Modo Avião)
+
+Para validar o tratamento resiliente de erros, estados de carregamento e recuperação de conexão da aplicação:
+
+### No Celular Físico ou Emulador
+1. **Carregamento inicial:** Abra o aplicativo com a conexão de internet ativa para que o bundle do Expo seja carregado.
+2. **Simular perda de conexão:** Ative o **Modo Avião** (Airplane Mode) no aparelho ou desligue o Wi-Fi e dados móveis.
+3. **Verificar Estado de Erro na Home:**
+   - Execute o gesto de puxar para atualizar (*pull-to-refresh*) na lista de motoristas.
+   - O aplicativo capturará a falha de rede e exibirá o componente `EstadoErro` com o ícone de offline e a mensagem *"Sem conexão com o servidor."*.
+4. **Verificar Estado de Erro no Detalhe do Motorista:**
+   - Ainda em modo avião, tente acessar o detalhe de um motorista ou recarregar a tela `motorista/[id]`.
+   - O componente `EstadoErro` será apresentado com o botão **"Tentar de novo"**.
+5. **Verificar Erro de Envio na Avaliação:**
+   - Na tela `avaliar/[id]`, preencha o formulário e clique em **Enviar avaliação**.
+   - O botão ficará em estado de carregamento e, em seguida, exibirá um `Alert` informando o erro de envio sem fechar o formulário.
+6. **Recuperação da Conexão:**
+   - Desative o Modo Avião e restabeleça a conexão com a internet.
+   - Pressione o botão **"Tentar de novo"** no componente de erro. Os dados serão requisitados novamente e o estado de sucesso será renderizado normalmente.
+
+### No Navegador Web (Chrome / Edge / Firefox)
+1. Pressione `F12` para abrir o **DevTools**.
+2. Acesse a aba **Network** (Rede).
+3. No seletor de limitação de rede (*Throttling*), selecione **Offline**.
+4. Teste as ações de recarregamento e envio de dados para visualizar os estados de erro e retentativa.
+
 ## 🖼️ Telas
 
 ### Login
