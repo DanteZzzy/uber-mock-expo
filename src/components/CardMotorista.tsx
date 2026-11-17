@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useMemo } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useTema } from "../theme/TemaContext";
 import type { Cores } from "../theme/temas";
@@ -9,21 +9,25 @@ import { iniciais } from "../utils/iniciais";
 
 type Props = {
   usuario: Usuario;
+  onPress?: (id: number) => void;
 };
 
-export default function CardMotorista({ usuario }: Props) {
+export default function CardMotorista({ usuario, onPress }: Props) {
   const { cores } = useTema();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
 
   return (
-    <View style={styles.card}>
+    <Pressable
+      onPress={() => onPress?.(usuario.id)}
+      style={({ pressed }) => [styles.card, pressed && styles.pressionado]}
+    >
       <View style={styles.avatar}>
         <Text style={styles.iniciais}>{iniciais(usuario.name)}</Text>
       </View>
       <Text style={styles.nome} numberOfLines={1}>
         {usuario.name}
       </Text>
-            <View style={styles.linhaCidade}>
+      <View style={styles.linhaCidade}>
         <Ionicons
           name="location-outline"
           size={13}
@@ -33,7 +37,7 @@ export default function CardMotorista({ usuario }: Props) {
           {usuario.address.city}
         </Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -48,6 +52,9 @@ const criarEstilos = (cores: Cores) =>
       borderColor: cores.borda,
       paddingVertical: 16,
       paddingHorizontal: 12,
+    },
+    pressionado: {
+      opacity: 0.8,
     },
     avatar: {
       width: 56,
@@ -68,5 +75,16 @@ const criarEstilos = (cores: Cores) =>
       fontSize: 14,
       fontWeight: "700",
       textAlign: "center",
+    },
+    linhaCidade: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      marginTop: 4,
+    },
+    cidade: {
+      color: cores.textoSecundario,
+      fontSize: 12,
+      flexShrink: 1,
     },
   });
