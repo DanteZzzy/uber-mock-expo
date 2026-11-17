@@ -3,6 +3,8 @@ import { useCallback, useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import EstadoCarregando from "../../../components/EstadoCarregando";
+import EstadoErro from "../../../components/EstadoErro";
+import EstadoVazio from "../../../components/EstadoVazio";
 import { useFetch } from "../../../hooks/useFetch";
 import { api } from "../../../services/api";
 import { useTema } from "../../../theme/TemaContext";
@@ -14,7 +16,7 @@ export default function DetalheMotorista() {
   const styles = useMemo(() => criarEstilos(cores), [cores]);
 
   const buscar = useCallback(() => api.usuario(Number(id)), [id]);
-  const { dados: motorista, loading } = useFetch(buscar);
+  const { dados: motorista, loading, erro, recarregar } = useFetch(buscar);
 
   if (loading) {
     return (
@@ -24,9 +26,25 @@ export default function DetalheMotorista() {
     );
   }
 
+  if (erro) {
+    return (
+      <View style={styles.telaCentralizada}>
+        <EstadoErro mensagem={erro} onTentarDeNovo={recarregar} />
+      </View>
+    );
+  }
+
+  if (!motorista) {
+    return (
+      <View style={styles.telaCentralizada}>
+        <EstadoVazio mensagem="Motorista não encontrado." />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.tela}>
-      <Text style={styles.texto}>Motorista ID: {id}</Text>
+      <Text style={styles.texto}>Motorista ID: {motorista.id}</Text>
     </View>
   );
 }
