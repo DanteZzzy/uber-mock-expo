@@ -1,13 +1,14 @@
 import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import type { ResultadoFetch } from "../../hooks/useFetch";
-import { useTema } from "../../theme/TemaContext";
-import type { Cores } from "../../theme/temas";
-import type { Usuario } from "../../types";
-import EstadoCarregando from "../EstadoCarregando";
-import EstadoErro from "../EstadoErro";
-import EstadoVazio from "../EstadoVazio";
+import type { ResultadoFetch } from "../hooks/useFetch";
+import { useTema } from "../theme/TemaContext";
+import type { Cores } from "../theme/temas";
+import type { Usuario } from "../types";
+
+import EstadoCarregando from "./EstadoCarregando";
+import EstadoErro from "./EstadoErro";
+import EstadoVazio from "./EstadoVazio";
 
 type Props = {
   motoristas: ResultadoFetch<Usuario[]>;
