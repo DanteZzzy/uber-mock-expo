@@ -113,7 +113,8 @@ export type CategoriaIfoodId =
   | "promocoes"
   | "shopping"
   | "gourmet"
-  | "exclusivo";
+  | "exclusivo"
+  | "todas";
 
 export type ItemCardapio = {
   id: string;
@@ -151,4 +152,11 @@ export type PedidoSalvo = {
   total: number;
   data: string;
   postId?: number;
+};
+
+export type CategoriaIfood = {
+  id: CategoriaIfoodId;
+  label: string;
+  icon: string;
+  badge?: string;
 };
