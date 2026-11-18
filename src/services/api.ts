@@ -1,17 +1,28 @@
-import type { NovoPost, Post, Usuario } from "../types";
+import type { NovoPost, Post, RespostaViaCep, Usuario } from "../types";
 
 // Só variáveis EXPO_PUBLIC_ chegam ao app. Sem o .env, usamos a API pública de testes.
-const BASE =
+const BASE_API =
   process.env.EXPO_PUBLIC_API_URL ?? "https://jsonplaceholder.typicode.com";
+
+const BASE_VIACEP =
+  process.env.EXPO_PUBLIC_VIACEP_URL ?? "https://viacep.com.br/ws";
 
 const TEMPO_LIMITE_MS = 10000;
 
-async function req<T>(caminho: string, opcoes?: RequestInit): Promise<T> {
+async function req<T>(
+  caminho: string,
+  opcoes?: RequestInit,
+  urlBase: string = BASE_API,
+): Promise<T> {
   const controlador = new AbortController();
   const temporizador = setTimeout(() => controlador.abort(), TEMPO_LIMITE_MS);
 
   try {
-    const resposta = await fetch(BASE + caminho, {
+    const urlCompleta = caminho.startsWith("http")
+      ? caminho
+      : `${urlBase}${caminho}`;
+
+    const resposta = await fetch(urlCompleta, {
       ...opcoes,
       signal: controlador.signal,
     });
@@ -46,4 +57,23 @@ export const api = {
       },
       body: JSON.stringify(dados),
     }),
+  viaCep: async (cep: string): Promise<RespostaViaCep> => {
+    const cepLimpo = cep.replace(/\D/g, "");
+    if (cepLimpo.length !== 8) {
+      throw new Error("CEP inválido. O CEP deve conter exatamente 8 dígitos.");
+    }
+
+    const resultado = await req<RespostaViaCep>(
+      `/${cepLimpo}/json/`,
+      undefined,
+      BASE_VIACEP,
+    );
+
+    // O ViaCEP retorna { erro: true } ou { erro: "true" } quando o CEP não existe
+    if (resultado.erro === true || resultado.erro === "true") {
+      throw new Error("CEP não encontrado na base do ViaCEP.");
+    }
+
+    return resultado;
+  },
 };
