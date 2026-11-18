@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTema } from '../../theme/TemaContext';
@@ -6,18 +7,24 @@ import type { Cores } from '../../theme/temas';
 import CampoBusca from '../CampoBusca';
 import LinhaAcaoQuadrada from '../LinhaAcaoQuadrada';
 import PillBotao from '../PillBotao';
+import type { TipoEnvio } from '../../types';
 
 const TAREFAS_RAPIDAS = [
-  { icon: 'document-text-outline', label: 'Enviar documentos' },
-  { icon: 'help-circle-outline', label: 'Esqueceu um item?' },
-  { icon: 'storefront-outline', label: 'Equipamentos para retirada de pedidos' },
-  { icon: 'cube-outline', label: 'Receber suprimentos' },
-  { icon: 'gift-outline', label: 'Envie um presente' },
+  { icon: 'document-text-outline', label: 'Enviar documentos', tipo: 'documentos' },
+  { icon: 'help-circle-outline', label: 'Esqueceu um item?', tipo: 'esquecido' },
+  { icon: 'storefront-outline', label: 'Equipamentos para retirada de pedidos', tipo: 'equipamentos' },
+  { icon: 'cube-outline', label: 'Receber suprimentos', tipo: 'suprimentos' },
+  { icon: 'gift-outline', label: 'Envie um presente', tipo: 'presente' },
 ] as const;
 
 export default function ConteudoEnvios() {
   const { cores } = useTema();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
+  const router = useRouter();
+
+  function abrirEnvio(tipo: TipoEnvio) {
+    router.push({ pathname: '/enviar', params: { tipo } });
+  }
 
   return (
     <>
@@ -36,20 +43,25 @@ export default function ConteudoEnvios() {
       </View>
 
       <View style={styles.card}>
-        <LinhaAcaoQuadrada icon="arrow-redo-outline" titulo="Enviar" />
+        <LinhaAcaoQuadrada icon="arrow-redo-outline" titulo="Enviar" onPress={() => abrirEnvio('encomenda')} />
         <View style={styles.divisor} />
-        <LinhaAcaoQuadrada icon="arrow-undo-outline" titulo="Receber" />
+        <LinhaAcaoQuadrada icon="arrow-undo-outline" titulo="Receber" onPress={() => abrirEnvio('recebimento')} />
       </View>
 
       <Text style={styles.secaoTitulo}>Economize uma viagem</Text>
       <View style={styles.card}>
-        <LinhaAcaoQuadrada icon="storefront-outline" titulo="Retiradas na loja" />
+        <LinhaAcaoQuadrada icon="storefront-outline" titulo="Retiradas na loja" onPress={() => abrirEnvio('retirada')} />
       </View>
 
       <Text style={styles.secaoTitulo}>Suas tarefas são concluídas rapidamente</Text>
       <View style={styles.pillsWrap}>
         {TAREFAS_RAPIDAS.map((tarefa) => (
-          <PillBotao key={tarefa.label} icon={tarefa.icon} label={tarefa.label} />
+          <PillBotao
+            key={tarefa.label}
+            icon={tarefa.icon}
+            label={tarefa.label}
+            onPress={() => abrirEnvio(tarefa.tipo)}
+          />
         ))}
       </View>
     </>
