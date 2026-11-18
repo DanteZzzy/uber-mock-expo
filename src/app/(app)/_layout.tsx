@@ -59,6 +59,9 @@ export default function AppLayout() {
           headerBackTitle: "Fechar",
         }}
       />
+      <Stack.Screen name="perfil" options={{ title: "Editar perfil", headerBackTitle: "Voltar" }} />
+      <Stack.Screen name="ajuda" options={{ title: "Central de Ajuda", headerBackTitle: "Voltar" }} />
+      <Stack.Screen name="carteira" options={{ title: "Carteira", headerBackTitle: "Voltar" }} />
     </Stack>
   );
 }
