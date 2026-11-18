@@ -165,3 +165,5 @@ export type Carrinho = {
   restauranteId: string | null;
   itens: ItemCarrinho[];
 };
+
+export type TipoAtividade = "viagem" | "comida";
