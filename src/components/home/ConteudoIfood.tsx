@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useMemo } from 'react';
+import { useRouter } from 'expo-router';
+import React, { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTema } from '../../theme/TemaContext';
 import type { Cores } from '../../theme/temas';
@@ -8,25 +9,13 @@ import BannerPromo from '../BannerPromo';
 import CampoBusca from '../CampoBusca';
 import CardQuadradoPromo from '../CardQuadradoPromo';
 import CardRestaurante from '../CardRestaurante';
-
-type CategoriaItem = {
-  label: string;
-  icon: string;
-  badge?: string;
-};
-
-const CATEGORIAS: readonly CategoriaItem[] = [
-  { label: 'Restaurantes', icon: 'restaurant-outline' },
-  { label: 'Mercados', icon: 'basket-outline' },
-  { label: 'Farmácias', icon: 'medkit-outline' },
-  { label: 'Bebida gelada', icon: 'wine-outline', badge: 'Novo' },
-  { label: 'Pet Shops', icon: 'paw-outline' },
-  { label: 'Promoções', icon: 'pricetag-outline', badge: 'Novo' },
-  { label: 'Shopping', icon: 'bag-outline' },
-  { label: 'Gourmet', icon: 'restaurant' },
-  { label: 'Só no iFood', icon: 'ribbon-outline', badge: 'Novo' },
-  { label: 'Ver mais', icon: 'grid-outline' },
-] as const;
+import EstadoVazio from '../EstadoVazio';
+import {
+  CATEGORIAS_IFOOD,
+  filtrarRestaurantes,
+  RESTAURANTES,
+} from '../../data/restaurantes';
+import type { CategoriaIfoodId } from '../../types';
 
 const BANNERS = [
   { id: 'banner1', imagem: { uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSreiJ_Tk3dNmCw8eT3O94KqcNL3UExWx4kO_SKXf08-g&s=10' } },
@@ -39,16 +28,32 @@ const CARDS_QUADRADOS = [
   { id: 'card3', imagem: { uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTU90lim6Ab0fkWbkjtWuXXQuVXqg_VH91-D6FETiOxXw&s=10' } },
 ];
 
-// Adicionada a propriedade imagem para os restaurantes
-const RESTAURANTES_CUPOM = [
-  { nome: 'Burger House', nota: 4.9, imagem: { uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKyuc7y5-W5VqqMFqmhX6OGV_IhO42ChS5pgLfHdKocg&s=10' } },
-  { nome: 'Cheddar Point', nota: 4.6, imagem: { uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8X-YthSZLUnyri0VToBl-OmCQVAwyUGiI0LMfHYF0Pw&s=10' } }, // Use links reais ou require()
-  { nome: 'Bacon Stack', nota: 4.2, imagem: { uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMsf75uwt_YWOEkvmBeQI-dWu9GsrXEgeHhe94zx5EXg&s=10' } },
-];
-
 export default function ConteudoIfood() {
   const { cores } = useTema();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
+  const router = useRouter();
+
+  const [busca, setBusca] = useState('');
+  const [categoriaAtiva, setCategoriaAtiva] = useState<CategoriaIfoodId | null>(null);
+
+  const filtrando = categoriaAtiva !== null || busca.trim() !== '';
+
+  const resultados = useMemo(
+    () => filtrarRestaurantes(RESTAURANTES, categoriaAtiva, busca),
+    [categoriaAtiva, busca],
+  );
+  const comCupom = useMemo(() => RESTAURANTES.filter((r) => r.cupom), []);
+
+  const tituloResultados =
+    CATEGORIAS_IFOOD.find((c) => c.id === categoriaAtiva)?.label ?? 'Resultados da busca';
+
+  function aoSelecionarCategoria(id: CategoriaIfoodId) {
+    setCategoriaAtiva((atual) => (atual === id ? null : id));
+  }
+
+  function abrirRestaurante(id: string) {
+    router.push(`/restaurante/${id}`);
+  }
 
   return (
     <>
@@ -63,61 +68,97 @@ export default function ConteudoIfood() {
         </TouchableOpacity>
       </View>
 
-      <CampoBusca placeholder="Buscar lojas ou itens" />
+      <CampoBusca placeholder="Buscar lojas ou itens" valor={busca} onChangeText={setBusca} />
 
       <View style={styles.grid}>
-        {CATEGORIAS.map((categoria) => (
+        {CATEGORIAS_IFOOD.map((categoria) => (
           <AtalhoCircular
-            key={categoria.label}
+            key={categoria.id}
             label={categoria.label}
             icon={categoria.icon}
             badge={categoria.badge}
+            ativo={categoria.id === categoriaAtiva}
+            onPress={() => aoSelecionarCategoria(categoria.id)}
           />
         ))}
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.bannersScroll}
-      >
-        {BANNERS.map((banner) => (
-          <BannerPromo key={banner.id} imagem={banner.imagem} />
-        ))}
-      </ScrollView>
+      {filtrando ? (
+        <>
+          <View style={styles.secaoHeader}>
+            <Text style={styles.secaoTitulo}>{tituloResultados}</Text>
+            <Text style={styles.verMais}>
+              {resultados.length} {resultados.length === 1 ? 'loja' : 'lojas'}
+            </Text>
+          </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.cardsQuadradosScroll}
-      >
-        {CARDS_QUADRADOS.map((card) => (
-          <CardQuadradoPromo key={card.id} imagem={card.imagem} />
-        ))}
-      </ScrollView>
+          {resultados.length === 0 ? (
+            <EstadoVazio mensagem="Nenhuma loja encontrada para esse filtro." />
+          ) : (
+            <View style={styles.resultados}>
+              {resultados.map((restaurante) => (
+                <CardRestaurante
+                  key={restaurante.id}
+                  id={restaurante.id}
+                  nome={restaurante.nome}
+                  nota={restaurante.nota}
+                  imagem={{ uri: restaurante.imagem }}
+                  onPress={abrirRestaurante}
+                />
+              ))}
+            </View>
+          )}
+        </>
+      ) : (
+        <>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.bannersScroll}
+          >
+            {BANNERS.map((banner) => (
+              <BannerPromo key={banner.id} imagem={banner.imagem} />
+            ))}
+          </ScrollView>
 
-      <View style={styles.secaoHeader}>
-        <View>
-          <Text style={styles.secaoTitulo}>Restaurantes com Cupom</Text>
-          <Text style={styles.secaoAd}>Ad</Text>
-        </View>
-        <Text style={styles.verMais}>Ver mais</Text>
-      </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.cardsQuadradosScroll}
+          >
+            {CARDS_QUADRADOS.map((card) => (
+              <CardQuadradoPromo key={card.id} imagem={card.imagem} />
+            ))}
+          </ScrollView>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.restaurantesScroll}
-      >
-        {RESTAURANTES_CUPOM.map((restaurante) => (
-          <CardRestaurante 
-            key={restaurante.nome} 
-            nome={restaurante.nome} 
-            nota={restaurante.nota} 
-            imagem={restaurante.imagem} // Passando a imagem para o componente
-          />
-        ))}
-      </ScrollView>
+          <View style={styles.secaoHeader}>
+            <View>
+              <Text style={styles.secaoTitulo}>Restaurantes com Cupom</Text>
+              <Text style={styles.secaoAd}>Ad</Text>
+            </View>
+            <Text style={styles.verMais} onPress={() => setCategoriaAtiva('promocoes')}>
+              Ver mais
+            </Text>
+          </View>
+
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.restaurantesScroll}
+          >
+            {comCupom.map((restaurante) => (
+              <CardRestaurante
+                key={restaurante.id}
+                id={restaurante.id}
+                nome={restaurante.nome}
+                nota={restaurante.nota}
+                imagem={{ uri: restaurante.imagem }}
+                onPress={abrirRestaurante}
+              />
+            ))}
+          </ScrollView>
+        </>
+      )}
     </>
   );
 }
@@ -186,6 +227,11 @@ const criarEstilos = (cores: Cores) =>
       color: cores.destaque,
       fontSize: 13,
       fontWeight: '700',
+    },
+    resultados: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 14,
     },
     restaurantesScroll: {
       gap: 14,
