@@ -21,11 +21,12 @@ import {
   atividadesAnteriores,
   avisoAtividade,
 } from "../../../data/atividades";
+import { CHAVE_ENVIOS, nomeDoTipoEnvio } from "../../../data/envios";
 import { CHAVE_PEDIDOS } from "../../../data/restaurantes";
 import { useArmazenamento } from "../../../hooks/useArmazenamento";
 import { useTema } from "../../../theme/TemaContext";
 import type { Cores } from "../../../theme/temas";
-import type { PedidoSalvo, ViagemSalva } from "../../../types";
+import type { EnvioSalvo, PedidoSalvo, ViagemSalva } from "../../../types";
 import { formatarMoeda } from "../../../utils/formatacao";
 
 // Os ids novos terminam com o horário de criação (v_<ms>, p_<ms>) e servem para ordenar
@@ -51,13 +52,18 @@ export default function AtividadeTela() {
     CHAVE_PEDIDOS,
     [],
   );
+  const [enviosSalvos, , , , recarregarEnvios] = useArmazenamento<EnvioSalvo[]>(
+    CHAVE_ENVIOS,
+    [],
+  );
 
   // As abas continuam montadas: relê o armazenamento sempre que a tela ganha foco
   useFocusEffect(
     useCallback(() => {
       recarregarViagens();
       recarregarPedidos();
-    }, [recarregarViagens, recarregarPedidos]),
+      recarregarEnvios();
+    }, [recarregarViagens, recarregarPedidos, recarregarEnvios]),
   );
 
   // Combina viagens e pedidos gravados (mais recentes primeiro) com as atividades mockadas
@@ -89,12 +95,21 @@ export default function AtividadeTela() {
       };
     });
 
-    const gravadas = [...viagens, ...pedidos].sort(
+    const envios: Atividade[] = enviosSalvos.map((e) => ({
+      id: e.id,
+      destino: e.destinatarioNome,
+      data: e.data,
+      valor: formatarMoeda(e.valor),
+      detalhe: nomeDoTipoEnvio(e.tipo),
+      tipo: "envio",
+    }));
+
+    const gravadas = [...viagens, ...pedidos, ...envios].sort(
       (a, b) => carimbo(b.id) - carimbo(a.id),
     );
 
     return [...gravadas, ...atividadesAnteriores];
-  }, [viagensSalvas, pedidosSalvos]);
+  }, [viagensSalvas, pedidosSalvos, enviosSalvos]);
 
   function abrirDetalhe(id: string) {
     router.push(`/viagem/${id}`);
