@@ -11,6 +11,7 @@ type AtalhoCircularProps = {
   icon: string;
   iconLib?: IconLib;
   badge?: string;
+  ativo?: boolean;
   onPress?: () => void;
 };
 
@@ -19,6 +20,7 @@ export default function AtalhoCircular({
   icon,
   iconLib = 'ionicons',
   badge,
+  ativo = false,
   onPress,
 }: AtalhoCircularProps) {
   const { cores } = useTema();
@@ -26,7 +28,7 @@ export default function AtalhoCircular({
 
   return (
     <TouchableOpacity style={styles.wrapper} onPress={onPress} activeOpacity={0.7}>
-      <View style={styles.circulo}>
+      <View style={[styles.circulo, ativo && styles.circuloAtivo]}>
         {badge && (
           <View style={styles.badge}>
             <Text style={styles.badgeTexto}>{badge}</Text>
@@ -56,6 +58,10 @@ const criarEstilos = (cores: Cores) =>
       backgroundColor: cores.superficieClara,
       alignItems: 'center',
       justifyContent: 'center',
+    },
+    circuloAtivo: {
+      borderWidth: 2,
+      borderColor: cores.textoPrincipal,
     },
     badge: {
       position: 'absolute',
