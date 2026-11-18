@@ -32,6 +32,14 @@ export default function AppLayout() {
     >
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen
+        name="pedir-viagem"
+        options={{ title: "Pedir viagem", headerBackTitle: "Voltar" }}
+      />
+      <Stack.Screen
+        name="acompanhar-viagem"
+        options={{ title: "Acompanhar viagem", headerBackTitle: "Voltar" }}
+      />
+      <Stack.Screen
         name="viagem/[id]"
         options={{ title: "Detalhes da viagem", headerBackTitle: "Voltar" }}
       />
