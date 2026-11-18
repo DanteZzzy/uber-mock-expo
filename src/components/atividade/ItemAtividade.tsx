@@ -2,9 +2,16 @@ import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import type { Atividade } from "../../data/atividades";
+import type { TipoAtividade } from "../../types";
 import { useTema } from "../../theme/TemaContext";
 import type { Cores } from "../../theme/temas";
 import { BotaoPilula } from "../BotaoPilula";
+
+const EMOJI_POR_TIPO: Record<TipoAtividade, string> = {
+  viagem: "🚗",
+  comida: "🍔",
+  envio: "📦",
+};
 
 type Props = {
   atividade: Atividade;
@@ -25,7 +32,7 @@ export function ItemAtividade({
     <View style={[styles.item, grande && styles.itemGrande]}>
       <View style={[styles.miniatura, grande && styles.miniaturaGrande]}>
         <Text style={[styles.emoji, grande && styles.emojiGrande]}>
-          {tipo === "comida" ? "🍔" : "🚗"}
+          {EMOJI_POR_TIPO[tipo]}
         </Text>
       </View>
 
