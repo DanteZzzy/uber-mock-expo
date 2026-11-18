@@ -33,3 +33,11 @@ export type NovoPost = {
   body: string;
   userId: number;
 };
+
+export type UsuarioSessao = {
+  id?: string;
+  nome: string;
+  email: string;
+  telefone?: string;
+  avatarUrl?: string;
+};
