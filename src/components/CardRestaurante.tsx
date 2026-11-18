@@ -3,14 +3,22 @@ import { Ionicons } from '@expo/vector-icons';
 
 
 interface Props {
+  id: string;
   nome: string;
   nota: number;
   imagem: ImageSourcePropType;
+  onPress: (id: string) => void;
 }
 
-export default function CardRestaurante({ nome, nota, imagem }: Props) {
+export default function CardRestaurante({ id, nome, nota, imagem, onPress }: Props) {
   return (
-    <TouchableOpacity activeOpacity={0.8} style={styles.container}>
+    <TouchableOpacity
+      activeOpacity={0.8}
+      style={styles.container}
+      onPress={() => onPress(id)}
+      accessibilityRole="button"
+      accessibilityLabel={`Abrir ${nome}`}
+    >
       <ImageBackground 
         source={imagem} 
         style={styles.imagemFundo}
