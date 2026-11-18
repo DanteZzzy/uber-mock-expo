@@ -81,3 +81,25 @@ export type ViagemSalva = {
   motorista?: MotoristaViagem;
   postId?: number;
 };
+
+export type RespostaViaCep = {
+  cep?: string;
+  logradouro?: string;
+  complemento?: string;
+  bairro?: string;
+  localidade?: string;
+  uf?: string;
+  erro?: boolean | string;
+};
+
+export type EnderecoUsuario = {
+  id: string;
+  rotulo: string;
+  rua: string;
+  numero: string;
+  complemento?: string;
+  bairro: string;
+  cidade: string;
+  uf: string;
+  cep: string;
+};
