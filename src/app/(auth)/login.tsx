@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -114,6 +115,16 @@ export default function Login() {
             desabilitado={carregando}
           />
 
+          <View style={styles.rodape}>
+            <Text style={styles.textoRodape}>Não tem uma conta?</Text>
+            <Pressable
+              onPress={() => router.push("/cadastro")}
+              disabled={carregando}
+            >
+              <Text style={styles.linkCadastro}>Criar conta</Text>
+            </Pressable>
+          </View>
+
           <Divisor />
 
           <View style={styles.sociais}>
@@ -180,6 +191,24 @@ const criarEstilos = (cores: Cores) =>
       fontWeight: "500",
       marginTop: -4,
       marginBottom: 14,
+    },
+    rodape: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      marginTop: 16,
+      marginBottom: 8,
+    },
+    textoRodape: {
+      fontSize: 14,
+      color: cores.textoSecundario,
+    },
+    linkCadastro: {
+      fontSize: 14,
+      fontWeight: "700",
+      color: cores.textoPrincipal,
+      textDecorationLine: "underline",
     },
     sociais: {
       gap: 10,
