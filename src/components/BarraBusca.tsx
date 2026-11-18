@@ -1,25 +1,46 @@
-import React, { useMemo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useTema } from '../theme/TemaContext';
-import type { Cores } from '../theme/temas';
+import { Ionicons } from "@expo/vector-icons";
+import React, { useMemo } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+
+import { useTema } from "../theme/TemaContext";
+import type { Cores } from "../theme/temas";
 
 type BarraBuscaProps = {
-  nomeUsuario: string;
+  nomeUsuario?: string;
+  onPress?: () => void;
+  onPressAgendar?: () => void;
 };
 
-export default function BarraBusca({ nomeUsuario }: BarraBuscaProps) {
+export default function BarraBusca({
+  nomeUsuario = "Usuário",
+  onPress,
+  onPressAgendar,
+}: BarraBuscaProps) {
   const { cores } = useTema();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
 
   return (
     <View style={styles.row}>
-      <View style={styles.busca}>
+      <TouchableOpacity
+        style={styles.busca}
+        activeOpacity={onPress ? 0.7 : 1}
+        onPress={onPress}
+      >
         <Ionicons name="search" size={18} color={cores.textoSecundario} />
-        <Text style={styles.placeholder}>Olá, {nomeUsuario.toUpperCase()}.</Text>
-      </View>
-      <TouchableOpacity style={styles.botaoAgendar} activeOpacity={0.7}>
-        <Ionicons name="calendar-outline" size={16} color={cores.textoPrincipal} />
+        <Text style={styles.placeholder}>
+          Olá, {nomeUsuario.toUpperCase()}.
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.botaoAgendar}
+        activeOpacity={0.7}
+        onPress={onPressAgendar}
+      >
+        <Ionicons
+          name="calendar-outline"
+          size={16}
+          color={cores.textoPrincipal}
+        />
         <Text style={styles.textoAgendar}>Mais tarde</Text>
       </TouchableOpacity>
     </View>
@@ -29,15 +50,15 @@ export default function BarraBusca({ nomeUsuario }: BarraBuscaProps) {
 const criarEstilos = (cores: Cores) =>
   StyleSheet.create({
     row: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       gap: 10,
       marginTop: 18,
     },
     busca: {
       flex: 1,
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       gap: 10,
       backgroundColor: cores.superficieClara,
       borderRadius: 24,
@@ -49,11 +70,11 @@ const criarEstilos = (cores: Cores) =>
     placeholder: {
       color: cores.textoSecundario,
       fontSize: 15,
-      fontWeight: '600',
+      fontWeight: "600",
     },
     botaoAgendar: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       gap: 6,
       backgroundColor: cores.superficieClara,
       borderRadius: 24,
@@ -65,6 +86,6 @@ const criarEstilos = (cores: Cores) =>
     textoAgendar: {
       color: cores.textoPrincipal,
       fontSize: 14,
-      fontWeight: '700',
+      fontWeight: "700",
     },
   });

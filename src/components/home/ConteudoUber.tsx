@@ -2,6 +2,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useAuth } from '../../context/AuthContext';
 import type { ResultadoFetch } from '../../hooks/useFetch';
 import { useTema } from '../../theme/TemaContext';
 import type { Cores } from '../../theme/temas';
@@ -36,11 +37,12 @@ const ENDERECOS_SALVOS = [
 
 export default function ConteudoUber({ motoristas }: Props) {
   const { cores } = useTema();
+  const { usuario } = useAuth();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
 
   return (
     <>
-      <BarraBusca nomeUsuario="Igor" />
+      <BarraBusca nomeUsuario={usuario?.nome ?? "Usuário"} />
 
       <View style={styles.cardEnderecos}>
         {ENDERECOS_SALVOS.map((endereco, index) => (
