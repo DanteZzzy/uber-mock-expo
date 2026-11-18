@@ -41,3 +41,12 @@ export type UsuarioSessao = {
   telefone?: string;
   avatarUrl?: string;
 };
+
+export type UsuarioCadastrado = {
+  id: string;
+  nome: string;
+  email: string;
+  senha: string;
+  telefone?: string;
+  avatarUrl?: string;
+};
