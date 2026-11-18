@@ -16,18 +16,18 @@ export default function Login() {
   const router = useRouter();
   const { entrar } = useAuth();
 
-  function entrarComContato() {
+  async function entrarComContato() {
     if (contato.trim().length < 3) {
       setErro("Informe um telefone ou e-mail válido");
       return;
     }
     setErro("");
-    entrar(contato.trim());
+    await entrar(contato.trim());
     router.replace("/home"); // replace: o botão voltar não retorna ao login
   }
 
-  function entrarComConta(nome: string) {
-    entrar(nome);
+  async function entrarComConta(nome: string) {
+    await entrar(nome);
     router.replace("/home");
   }
 

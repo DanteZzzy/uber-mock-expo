@@ -13,8 +13,8 @@ export function BotaoSair() {
   const router = useRouter();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
 
-  function aoSair() {
-    sair();
+  async function aoSair() {
+    await sair();
     router.replace("/login");
   }
 
@@ -37,7 +37,9 @@ export function BotaoSair() {
         <Ionicons name="log-out-outline" size={22} color={cores.destaque} />
         <Text style={styles.texto}>Sair</Text>
       </Pressable>
-      {usuario && <Text style={styles.legenda}>Conectado como {usuario}</Text>}
+      {usuario && (
+        <Text style={styles.legenda}>Conectado como {usuario.nome}</Text>
+      )}
     </View>
   );
 }
