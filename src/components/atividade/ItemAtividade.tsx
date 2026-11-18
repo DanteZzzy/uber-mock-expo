@@ -19,12 +19,14 @@ export function ItemAtividade({
 }: Props) {
   const { cores } = useTema();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
-  const { destino, data, valor, detalhe } = atividade;
+  const { destino, data, valor, detalhe, tipo = "viagem" } = atividade;
 
   return (
     <View style={[styles.item, grande && styles.itemGrande]}>
       <View style={[styles.miniatura, grande && styles.miniaturaGrande]}>
-        <Text style={[styles.emoji, grande && styles.emojiGrande]}>🚗</Text>
+        <Text style={[styles.emoji, grande && styles.emojiGrande]}>
+          {tipo === "comida" ? "🍔" : "🚗"}
+        </Text>
       </View>
 
       <View style={styles.textos}>
@@ -43,7 +45,9 @@ export function ItemAtividade({
         </Text>
       </View>
 
-      <BotaoPilula titulo="Reagendar" icone="refresh" onPress={onReagendar} />
+      {tipo === "viagem" && (
+        <BotaoPilula titulo="Reagendar" icone="refresh" onPress={onReagendar} />
+      )}
     </View>
   );
 }
