@@ -50,3 +50,34 @@ export type UsuarioCadastrado = {
   telefone?: string;
   avatarUrl?: string;
 };
+
+export type CategoriaOpcaoViagem = {
+  id: "uber" | "moto" | "comfort";
+  nome: string;
+  descricao: string;
+  tempoMin: number;
+  fatorPreco: number;
+  emoji: string;
+};
+
+export type MotoristaViagem = {
+  id: number;
+  nome: string;
+  telefone?: string;
+  veiculo: string;
+  placa: string;
+  avaliacao: number;
+};
+
+export type ViagemSalva = {
+  id: string;
+  origem: string;
+  destino: string;
+  categoria: string;
+  valor: string;
+  data: string;
+  detalhe?: string;
+  status: "concluida" | "cancelada" | "em_andamento";
+  motorista?: MotoristaViagem;
+  postId?: number;
+};
