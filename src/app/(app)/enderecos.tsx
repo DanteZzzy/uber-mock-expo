@@ -22,30 +22,7 @@ import { useTema } from "../../theme/TemaContext";
 import type { Cores } from "../../theme/temas";
 import type { EnderecoUsuario } from "../../types";
 
-export const ENDERECOS_PADRAO: EnderecoUsuario[] = [
-  {
-    id: "end_1",
-    rotulo: "Casa",
-    rua: "Rua Augusto Calheiros",
-    numero: "305",
-    complemento: "Apto 101",
-    bairro: "Raul Veiga",
-    cidade: "São Gonçalo",
-    uf: "RJ",
-    cep: "24730-030",
-  },
-  {
-    id: "end_2",
-    rotulo: "Trabalho",
-    rua: "Av. Presidente Kennedy",
-    numero: "795",
-    complemento: "Salto Agulha",
-    bairro: "Centro",
-    cidade: "Niterói",
-    uf: "RJ",
-    cep: "24030-090",
-  },
-];
+import { CHAVE_ENDERECOS, ENDERECOS_PADRAO } from "../../data/enderecos"; 
 
 export default function EnderecosTela() {
   const { cores } = useTema();
