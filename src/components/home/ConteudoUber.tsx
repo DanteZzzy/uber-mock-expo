@@ -1,13 +1,19 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import React, { useMemo } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useMemo } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import { useAuth } from "../../context/AuthContext";
+import {
+  CHAVE_ENDERECOS,
+  ENDERECOS_PADRAO,
+  formatarEnderecoCompleto,
+} from "../../data/enderecos";
+import { useArmazenamento } from "../../hooks/useArmazenamento";
 import type { ResultadoFetch } from "../../hooks/useFetch";
 import { useTema } from "../../theme/TemaContext";
 import type { Cores } from "../../theme/temas";
-import type { Usuario } from "../../types";
+import type { EnderecoUsuario, Usuario } from "../../types";
 import AtalhoCircular from "../AtalhoCircular";
 import BarraBusca from "../BarraBusca";
 import CardBanner from "../CardBanner";
@@ -26,22 +32,35 @@ const ATALHOS = [
   { id: "ifood", label: "iFood", icon: "fast-food-outline", badge: "Novo" },
 ];
 
-const ENDERECOS_SALVOS = [
-  {
-    titulo: "Rua Augusto Calheiros, 305 - Raul Veiga",
-    subtitulo: "São Gonçalo - RJ, 24730-030",
-  },
-  {
-    titulo: "Salto Agulha",
-    subtitulo: "Av. Presidente Kennedy, 795 - Centro",
-  },
-];
+const LIMITE_ENDERECOS_NA_HOME = 3;
+
+function montarSubtitulo(endereco: EnderecoUsuario): string {
+  const local = endereco.bairro
+    ? `${endereco.bairro}, ${endereco.cidade}`
+    : endereco.cidade;
+  return `${endereco.rotulo} • ${local} - ${endereco.uf}`;
+}
 
 export default function ConteudoUber({ motoristas, onMudarAba }: Props) {
   const router = useRouter();
   const { cores } = useTema();
   const { usuario } = useAuth();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
+
+  const [enderecos, , carregado, , recarregarEnderecos] = useArmazenamento<
+    EnderecoUsuario[]
+  >(CHAVE_ENDERECOS, ENDERECOS_PADRAO);
+
+  // A Home continua montada ao abrir "enderecos": relê o disco ao voltar o foco
+  useFocusEffect(
+    useCallback(() => {
+      recarregarEnderecos();
+    }, [recarregarEnderecos]),
+  );
+
+  const enderecosVisiveis = carregado
+    ? enderecos.slice(0, LIMITE_ENDERECOS_NA_HOME)
+    : [];
 
   function aoTocarAtalho(id: string) {
     if (id === "viagem") {
@@ -66,10 +85,10 @@ export default function ConteudoUber({ motoristas, onMudarAba }: Props) {
     }
   }
 
-  function aoTocarEndereco(endereco: { titulo: string; subtitulo: string }) {
+  function aoTocarEndereco(endereco: EnderecoUsuario) {
     router.push({
       pathname: "/pedir-viagem",
-      params: { destino: `${endereco.titulo}, ${endereco.subtitulo}` },
+      params: { destino: formatarEnderecoCompleto(endereco) },
     });
   }
 
@@ -87,18 +106,38 @@ export default function ConteudoUber({ motoristas, onMudarAba }: Props) {
       />
 
       <View style={styles.cardEnderecos}>
-        {ENDERECOS_SALVOS.map((endereco, index) => (
-          <React.Fragment key={endereco.titulo}>
+        {enderecosVisiveis.map((endereco) => (
+          <React.Fragment key={endereco.id}>
             <EnderecoSalvo
-              titulo={endereco.titulo}
-              subtitulo={endereco.subtitulo}
+              titulo={`${endereco.rua}, ${endereco.numero}`}
+              subtitulo={montarSubtitulo(endereco)}
               onPress={() => aoTocarEndereco(endereco)}
             />
-            {index < ENDERECOS_SALVOS.length - 1 && (
-              <View style={styles.divisor} />
-            )}
+            <View style={styles.divisor} />
           </React.Fragment>
         ))}
+
+        <TouchableOpacity
+          style={styles.linhaGerenciar}
+          activeOpacity={0.7}
+          onPress={() => router.push("/enderecos")}
+        >
+          <Ionicons
+            name="location-outline"
+            size={18}
+            color={cores.textoPrincipal}
+          />
+          <Text style={styles.textoGerenciar}>
+            {carregado && enderecos.length === 0
+              ? "Adicionar um endereço"
+              : "Gerenciar endereços"}
+          </Text>
+          <Ionicons
+            name="chevron-forward"
+            size={18}
+            color={cores.textoSecundario}
+          />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.secaoHeader}>
@@ -165,6 +204,18 @@ const criarEstilos = (cores: Cores) =>
     divisor: {
       height: 1,
       backgroundColor: cores.borda,
+    },
+    linhaGerenciar: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 14,
+      gap: 12,
+    },
+    textoGerenciar: {
+      flex: 1,
+      color: cores.textoPrincipal,
+      fontSize: 15,
+      fontWeight: "700",
     },
     secaoHeader: {
       flexDirection: "row",

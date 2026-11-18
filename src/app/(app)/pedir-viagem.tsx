@@ -1,6 +1,14 @@
+
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
+import {
+  CHAVE_ENDERECOS,
+  ENDERECOS_PADRAO,
+  formatarEnderecoCompleto,
+} from "../../data/enderecos";
+import { useArmazenamento } from "../../hooks/useArmazenamento";
+
 import {
   Alert,
   KeyboardAvoidingView,
@@ -17,7 +25,7 @@ import { Botao } from "../../components/Botao";
 import { api } from "../../services/api";
 import { useTema } from "../../theme/TemaContext";
 import type { Cores } from "../../theme/temas";
-import type { CategoriaOpcaoViagem } from "../../types";
+import type { CategoriaOpcaoViagem, EnderecoUsuario } from "../../types";
 
 const CATEGORIAS: CategoriaOpcaoViagem[] = [
   {
@@ -69,6 +77,11 @@ export default function PedirViagem() {
   );
   const [solicitando, setSolicitando] = useState(false);
   const [erro, setErro] = useState("");
+
+  const [enderecos, , carregadoEnderecos] = useArmazenamento<EnderecoUsuario[]>(
+    CHAVE_ENDERECOS,
+    ENDERECOS_PADRAO,
+  );
 
   // Cálculo dinâmico próprio de valor baseado no tamanho do destino e categoria
   const estimativas = useMemo(() => {
@@ -201,6 +214,44 @@ export default function PedirViagem() {
           </View>
 
           {erro !== "" && <Text style={styles.textoErro}>{erro}</Text>}
+
+          {carregadoEnderecos && enderecos.length > 0 && (
+          <View style={styles.sugestoes}>
+            <Text style={styles.tituloSugestoes}>Seus endereços</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={styles.listaSugestoes}
+            >
+              {enderecos.map((item) => {
+                const completo = formatarEnderecoCompleto(item);
+                const ativo = destino.trim() === completo;
+
+                return (
+                  <Pressable
+                    key={item.id}
+                    style={[styles.chip, ativo && styles.chipAtivo]}
+                    disabled={solicitando}
+                    onPress={() => {
+                      setDestino(completo);
+                      setErro("");
+                    }}
+                  >
+                    <Ionicons
+                      name="location-outline"
+                      size={14}
+                      color={ativo ? cores.fundo : cores.textoPrincipal}
+                    />
+                    <Text style={[styles.textoChip, ativo && styles.textoChipAtivo]}>
+                      {item.rotulo}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </View>
+        )}
 
           {/* Seleção de Categorias */}
           <Text style={styles.tituloCategorias}>Escolha sua categoria</Text>
@@ -437,4 +488,41 @@ const criarEstilos = (cores: Cores) =>
       color: cores.textoSecundario,
       fontWeight: "500",
     },
+
+    sugestoes: {
+  marginTop: 16,
+},
+tituloSugestoes: {
+  fontSize: 12,
+  fontWeight: "700",
+  color: cores.textoSecundario,
+  textTransform: "uppercase",
+  marginBottom: 8,
+},
+listaSugestoes: {
+  gap: 8,
+},
+chip: {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 6,
+  backgroundColor: cores.superficieClara,
+  borderRadius: 16,
+  borderWidth: 1,
+  borderColor: cores.borda,
+  paddingHorizontal: 12,
+  paddingVertical: 8,
+},
+chipAtivo: {
+  backgroundColor: cores.textoPrincipal,
+  borderColor: cores.textoPrincipal,
+},
+textoChip: {
+  fontSize: 13,
+  fontWeight: "600",
+  color: cores.textoPrincipal,
+},
+textoChipAtivo: {
+  color: cores.fundo,
+},
   });
