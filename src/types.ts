@@ -167,3 +167,45 @@ export type Carrinho = {
 };
 
 export type TipoAtividade = "viagem" | "comida";
+
+export type TipoEnvio =
+  | "encomenda"
+  | "recebimento"
+  | "retirada"
+  | "documentos"
+  | "esquecido"
+  | "equipamentos"
+  | "suprimentos"
+  | "presente";
+
+export type TamanhoEnvio = "pequeno" | "medio" | "grande";
+
+export type OpcaoTipoEnvio = {
+  id: TipoEnvio;
+  nome: string;
+  taxaBase: number;
+  // true quando o usuário é quem recebe (preenche o destinatário com os dados dele)
+  recebe: boolean;
+};
+
+export type OpcaoTamanhoEnvio = {
+  id: TamanhoEnvio;
+  nome: string;
+  descricao: string;
+  fator: number;
+};
+
+export type EnvioSalvo = {
+  id: string;
+  tipo: TipoEnvio;
+  remetenteNome: string;
+  enderecoColeta: string;
+  destinatarioNome: string;
+  destinatarioTelefone: string;
+  enderecoEntrega: string;
+  item: string;
+  tamanho: TamanhoEnvio;
+  valor: number;
+  data: string;
+  postId?: number;
+};
