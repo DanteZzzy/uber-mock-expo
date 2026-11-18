@@ -48,6 +48,10 @@ export default function AppLayout() {
         options={{ title: "Carrinho", headerBackTitle: "Voltar" }}
       />
       <Stack.Screen
+        name="enviar"
+        options={{ title: "Envios", headerBackTitle: "Voltar" }}
+      />
+      <Stack.Screen
         name="enderecos"
         options={{ title: "Endereços salvos", headerBackTitle: "Voltar" }}
       />
