@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo } from "react";
 import {
   Pressable,
@@ -14,10 +14,12 @@ import {
   atividadeDestaque,
   atividadesAnteriores,
 } from "../../../data/atividades";
+import { CHAVE_PEDIDOS } from "../../../data/restaurantes";
 import { useArmazenamento } from "../../../hooks/useArmazenamento";
 import { useTema } from "../../../theme/TemaContext";
 import type { Cores } from "../../../theme/temas";
-import type { ViagemSalva } from "../../../types";
+import type { PedidoSalvo, ViagemSalva } from "../../../types";
+import { formatarMoeda } from "../../../utils/formatacao";
 
 const todasAtividadesEstaticas = [atividadeDestaque, ...atividadesAnteriores];
 
@@ -28,7 +30,14 @@ export default function DetalheViagem() {
   const styles = useMemo(() => criarEstilos(cores), [cores]);
 
   // Carrega viagens salvas no AsyncStorage
-  const [viagensSalvas] = useArmazenamento<ViagemSalva[]>("@uber_viagens", []);
+  const [viagensSalvas, , viagensCarregadas] = useArmazenamento<ViagemSalva[]>(
+    "@uber_viagens",
+    [],
+  );
+  const [pedidosSalvos, , pedidosCarregados] = useArmazenamento<PedidoSalvo[]>(
+    CHAVE_PEDIDOS,
+    [],
+  );
 
   // Busca primeiro nas viagens salvas localmente
   const viagemStorage = viagensSalvas.find((item) => item.id === id);
@@ -38,7 +47,14 @@ export default function DetalheViagem() {
     (item) => item.id === id,
   );
 
-  if (!viagemStorage && !atividadeEstatica) {
+  const pedido = pedidosSalvos.find((item) => item.id === id);
+
+  // Espera a leitura do armazenamento para não piscar "não encontrada"
+  if (!viagensCarregadas || !pedidosCarregados) {
+    return <View style={styles.vazio} />;
+  }
+
+  if (!viagemStorage && !atividadeEstatica && !pedido) {
     return (
       <View style={styles.vazio}>
         <Text style={styles.titulo}>Viagem não encontrada</Text>
@@ -52,11 +68,30 @@ export default function DetalheViagem() {
   }
 
   // Linhas para exibição detalhada
-  const tituloDestino = viagemStorage
-    ? viagemStorage.destino
-    : atividadeEstatica!.destino;
+  const tituloDestino = pedido
+    ? pedido.restauranteNome
+    : viagemStorage
+      ? viagemStorage.destino
+      : atividadeEstatica!.destino;
 
-  const linhas = viagemStorage
+  const linhas = pedido
+    ? [
+        {
+          rotulo: "Itens",
+          valor: pedido.itens
+            .map((item) => `${item.quantidade}x ${item.nome}`)
+            .join("\n"),
+        },
+        { rotulo: "Subtotal", valor: formatarMoeda(pedido.subtotal) },
+        { rotulo: "Taxa de entrega", valor: formatarMoeda(pedido.taxaEntrega) },
+        { rotulo: "Total", valor: formatarMoeda(pedido.total) },
+        { rotulo: "Data e Horário", valor: pedido.data },
+        {
+          rotulo: "Código do Pedido",
+          valor: pedido.postId ? `API #${pedido.postId}` : pedido.id,
+        },
+      ]
+    : viagemStorage
     ? [
         { rotulo: "Origem", valor: viagemStorage.origem },
         { rotulo: "Destino", valor: viagemStorage.destino },
@@ -100,10 +135,11 @@ export default function DetalheViagem() {
 
   return (
     <ScrollView style={styles.tela} contentContainerStyle={styles.conteudo}>
+      {pedido && <Stack.Screen options={{ title: "Detalhes do pedido" }} />}
       <View style={styles.coluna}>
         <View style={styles.cabecalho}>
           <View style={styles.miniatura}>
-            <Text style={styles.emoji}>🚗</Text>
+            <Text style={styles.emoji}>{pedido ? "🍔" : "🚗"}</Text>
           </View>
           <Text style={styles.titulo}>{tituloDestino}</Text>
         </View>
