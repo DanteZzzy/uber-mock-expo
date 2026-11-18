@@ -1,12 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   Alert,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
   useWindowDimensions,
 } from "react-native";
@@ -15,6 +16,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CartaoAviso } from "../../../components/atividade/CartaoAviso";
 import { CartaoDestaque } from "../../../components/atividade/CartaoDestaque";
 import { ItemAtividade } from "../../../components/atividade/ItemAtividade";
+import EstadoVazio from "../../../components/EstadoVazio";
+import PillBotao from "../../../components/PillBotao";
 import {
   Atividade,
   atividadeDestaque,
@@ -26,6 +29,8 @@ import { useTema } from "../../../theme/TemaContext";
 import type { Cores } from "../../../theme/temas";
 import type { ViagemSalva } from "../../../types";
 
+type Filtro = "viagens" | "comida" | "envios";
+
 export default function AtividadeTela() {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
@@ -34,6 +39,9 @@ export default function AtividadeTela() {
 
   const { cores } = useTema();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
+
+  const [busca, setBusca] = useState("");
+  const [filtro, setFiltro] = useState<Filtro>("viagens");
 
   // Carrega viagens persistidas no AsyncStorage
   const [viagensSalvas] = useArmazenamento<ViagemSalva[]>("@uber_viagens", []);
@@ -57,9 +65,28 @@ export default function AtividadeTela() {
     return [...doStorage, ...atividadesAnteriores];
   }, [viagensSalvas]);
 
+  const atividadesFiltradas = useMemo(() => {
+    if (filtro !== "viagens") return [];
+    if (!busca.trim()) return todasAtividades;
+    return todasAtividades.filter((v) =>
+      v.destino.toLowerCase().includes(busca.toLowerCase()),
+    );
+  }, [todasAtividades, busca, filtro]);
+
   function abrirDetalhe(id: string) {
     router.push(`/viagem/${id}`);
   }
+
+  function limparFiltros() {
+    setBusca("");
+    setFiltro("viagens");
+  }
+
+  const filtros: { id: Filtro; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+    { id: "viagens", label: "Viagens", icon: "car-outline" },
+    { id: "comida", label: "Comida", icon: "fast-food-outline" },
+    { id: "envios", label: "Envios", icon: "cube-outline" },
+  ];
 
   return (
     <ScrollView
@@ -72,17 +99,45 @@ export default function AtividadeTela() {
       <View style={[styles.conteudo, { maxWidth: duasColunas ? 1080 : 480 }]}>
         <Text style={styles.titulo}>Atividade</Text>
 
+        {/* Campo de busca */}
+        <View style={styles.campoBuscaContainer}>
+          <Ionicons name="search-outline" size={18} color={cores.textoSecundario} />
+          <TextInput
+            style={styles.campoBusca}
+            value={busca}
+            onChangeText={setBusca}
+            placeholder="Buscar destino..."
+            placeholderTextColor={cores.textoSecundario}
+          />
+          {busca.length > 0 && (
+            <Pressable onPress={() => setBusca("")}>
+              <Ionicons name="close-circle" size={18} color={cores.textoSecundario} />
+            </Pressable>
+          )}
+        </View>
+
+        {/* Filtros por categoria */}
+        <View style={styles.filtrosLinha}>
+          {filtros.map((f) => (
+            <View
+              key={f.id}
+              style={[
+                styles.pillWrapper,
+                filtro === f.id && styles.pillWrapperAtivo,
+              ]}
+            >
+              <PillBotao
+                icon={f.icon}
+                label={f.label}
+                onPress={() => setFiltro(f.id)}
+              />
+            </View>
+          ))}
+        </View>
+
         <View style={styles.cabecalhoSecao}>
           <Text style={styles.secao}>Anteriores</Text>
-          <Pressable
-            style={styles.filtro}
-            onPress={() =>
-              Alert.alert(
-                "Filtro de Atividades",
-                "Exibindo todas as viagens e solicitações recentes.",
-              )
-            }
-          >
+          <Pressable style={styles.filtroBotao} onPress={limparFiltros}>
             <Ionicons
               name="options-outline"
               size={22}
@@ -114,14 +169,22 @@ export default function AtividadeTela() {
           </View>
 
           <View style={duasColunas ? styles.coluna : undefined}>
-            {todasAtividades.map((atividade) => (
-              <Pressable
-                key={atividade.id}
-                onPress={() => abrirDetalhe(atividade.id)}
-              >
-                <ItemAtividade atividade={atividade} />
-              </Pressable>
-            ))}
+            {filtro === "comida" ? (
+              <EstadoVazio mensagem="Nenhuma atividade de Comida" />
+            ) : filtro === "envios" ? (
+              <EstadoVazio mensagem="Nenhuma atividade de Envios" />
+            ) : atividadesFiltradas.length === 0 ? (
+              <EstadoVazio mensagem="Nenhuma atividade encontrada" />
+            ) : (
+              atividadesFiltradas.map((atividade) => (
+                <Pressable
+                  key={atividade.id}
+                  onPress={() => abrirDetalhe(atividade.id)}
+                >
+                  <ItemAtividade atividade={atividade} />
+                </Pressable>
+              ))
+            )}
           </View>
         </View>
       </View>
@@ -146,6 +209,35 @@ const criarEstilos = (cores: Cores) =>
       fontWeight: "700",
       marginBottom: 24,
     },
+    campoBuscaContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: cores.superficieClara,
+      borderRadius: 12,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      gap: 8,
+      marginBottom: 12,
+    },
+    campoBusca: {
+      flex: 1,
+      color: cores.textoPrincipal,
+      fontSize: 15,
+    },
+    filtrosLinha: {
+      flexDirection: "row",
+      gap: 8,
+      marginBottom: 20,
+    },
+    pillWrapper: {
+      borderRadius: 20,
+      opacity: 0.55,
+    },
+    pillWrapperAtivo: {
+      opacity: 1,
+      borderWidth: 2,
+      borderColor: cores.textoPrincipal,
+    },
     cabecalhoSecao: {
       flexDirection: "row",
       alignItems: "center",
@@ -157,7 +249,7 @@ const criarEstilos = (cores: Cores) =>
       fontSize: 22,
       fontWeight: "700",
     },
-    filtro: {
+    filtroBotao: {
       width: 44,
       height: 44,
       borderRadius: 22,

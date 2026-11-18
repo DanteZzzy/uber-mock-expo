@@ -49,6 +49,7 @@ async function req<T>(
 export const api = {
   usuarios: () => req<Usuario[]>("/users"),
   usuario: (id: number) => req<Usuario>(`/users/${id}`),
+  postsPorUsuario: (id: number) => req<Post[]>(`/users/${id}/posts`),
   criarPost: (dados: NovoPost) =>
     req<Post>("/posts", {
       method: "POST",
