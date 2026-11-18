@@ -14,11 +14,16 @@ import {
   atividadeDestaque,
   atividadesAnteriores,
 } from "../../../data/atividades";
+import {
+  CHAVE_ENVIOS,
+  nomeDoTamanhoEnvio,
+  nomeDoTipoEnvio,
+} from "../../../data/envios";
 import { CHAVE_PEDIDOS } from "../../../data/restaurantes";
 import { useArmazenamento } from "../../../hooks/useArmazenamento";
 import { useTema } from "../../../theme/TemaContext";
 import type { Cores } from "../../../theme/temas";
-import type { PedidoSalvo, ViagemSalva } from "../../../types";
+import type { EnvioSalvo, PedidoSalvo, ViagemSalva } from "../../../types";
 import { formatarMoeda } from "../../../utils/formatacao";
 
 const todasAtividadesEstaticas = [atividadeDestaque, ...atividadesAnteriores];
@@ -38,6 +43,10 @@ export default function DetalheViagem() {
     CHAVE_PEDIDOS,
     [],
   );
+  const [enviosSalvos, , enviosCarregados] = useArmazenamento<EnvioSalvo[]>(
+    CHAVE_ENVIOS,
+    [],
+  );
 
   // Busca primeiro nas viagens salvas localmente
   const viagemStorage = viagensSalvas.find((item) => item.id === id);
@@ -48,13 +57,14 @@ export default function DetalheViagem() {
   );
 
   const pedido = pedidosSalvos.find((item) => item.id === id);
+  const envio = enviosSalvos.find((item) => item.id === id);
 
   // Espera a leitura do armazenamento para não piscar "não encontrada"
-  if (!viagensCarregadas || !pedidosCarregados) {
+  if (!viagensCarregadas || !pedidosCarregados || !enviosCarregados) {
     return <View style={styles.vazio} />;
   }
 
-  if (!viagemStorage && !atividadeEstatica && !pedido) {
+  if (!viagemStorage && !atividadeEstatica && !pedido && !envio) {
     return (
       <View style={styles.vazio}>
         <Text style={styles.titulo}>Viagem não encontrada</Text>
@@ -68,13 +78,34 @@ export default function DetalheViagem() {
   }
 
   // Linhas para exibição detalhada
-  const tituloDestino = pedido
-    ? pedido.restauranteNome
-    : viagemStorage
-      ? viagemStorage.destino
-      : atividadeEstatica!.destino;
+  const tituloDestino = envio
+    ? envio.destinatarioNome
+    : pedido
+      ? pedido.restauranteNome
+      : viagemStorage
+        ? viagemStorage.destino
+        : atividadeEstatica!.destino;
 
-  const linhas = pedido
+  const linhas = envio
+    ? [
+        { rotulo: "Tipo", valor: nomeDoTipoEnvio(envio.tipo) },
+        { rotulo: "Remetente", valor: envio.remetenteNome },
+        { rotulo: "Coleta", valor: envio.enderecoColeta },
+        { rotulo: "Destinatário", valor: envio.destinatarioNome },
+        { rotulo: "Telefone", valor: envio.destinatarioTelefone },
+        { rotulo: "Entrega", valor: envio.enderecoEntrega },
+        {
+          rotulo: "Item",
+          valor: `${envio.item} (${nomeDoTamanhoEnvio(envio.tamanho)})`,
+        },
+        { rotulo: "Data e Horário", valor: envio.data },
+        { rotulo: "Valor", valor: formatarMoeda(envio.valor) },
+        {
+          rotulo: "Código do Envio",
+          valor: envio.postId ? `API #${envio.postId}` : envio.id,
+        },
+      ]
+    : pedido
     ? [
         {
           rotulo: "Itens",
@@ -135,11 +166,19 @@ export default function DetalheViagem() {
 
   return (
     <ScrollView style={styles.tela} contentContainerStyle={styles.conteudo}>
-      {pedido && <Stack.Screen options={{ title: "Detalhes do pedido" }} />}
+      {(pedido || envio) && (
+        <Stack.Screen
+          options={{
+            title: pedido ? "Detalhes do pedido" : "Detalhes do envio",
+          }}
+        />
+      )}
       <View style={styles.coluna}>
         <View style={styles.cabecalho}>
           <View style={styles.miniatura}>
-            <Text style={styles.emoji}>{pedido ? "🍔" : "🚗"}</Text>
+            <Text style={styles.emoji}>
+              {envio ? "📦" : pedido ? "🍔" : "🚗"}
+            </Text>
           </View>
           <Text style={styles.titulo}>{tituloDestino}</Text>
         </View>
