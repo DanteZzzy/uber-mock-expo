@@ -1,29 +1,50 @@
 import { ReactNode } from "react";
-import { Pressable, StyleSheet, Text } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text } from "react-native";
 
 type Props = {
   titulo: string;
   onPress?: () => void;
   variante?: "primario" | "social";
   icone?: ReactNode;
+  desabilitado?: boolean;
+  carregando?: boolean;
 };
 
-export function Botao({ titulo, onPress, variante = "primario", icone }: Props) {
+export function Botao({
+  titulo,
+  onPress,
+  variante = "primario",
+  icone,
+  desabilitado = false,
+  carregando = false,
+}: Props) {
   const primario = variante === "primario";
+  const bloqueado = desabilitado || carregando;
 
   return (
     <Pressable
-      onPress={onPress}
+      onPress={bloqueado ? undefined : onPress}
+      disabled={bloqueado}
       style={({ pressed }) => [
         styles.base,
         primario ? styles.primario : styles.social,
-        pressed && styles.pressionado,
+        bloqueado && styles.desabilitado,
+        pressed && !bloqueado && styles.pressionado,
       ]}
     >
-      {icone}
-      <Text style={[styles.texto, primario && styles.textoPrimario]}>
-        {titulo}
-      </Text>
+      {carregando ? (
+        <ActivityIndicator
+          size="small"
+          color={primario ? "#fff" : "#000"}
+        />
+      ) : (
+        <>
+          {icone}
+          <Text style={[styles.texto, primario && styles.textoPrimario]}>
+            {titulo}
+          </Text>
+        </>
+      )}
     </Pressable>
   );
 }
@@ -42,6 +63,9 @@ const styles = StyleSheet.create({
   },
   social: {
     backgroundColor: "#eee",
+  },
+  desabilitado: {
+    opacity: 0.6,
   },
   pressionado: {
     opacity: 0.8,
