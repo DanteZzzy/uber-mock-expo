@@ -103,3 +103,52 @@ export type EnderecoUsuario = {
   uf: string;
   cep: string;
 };
+
+export type CategoriaIfoodId =
+  | "restaurantes"
+  | "mercados"
+  | "farmacias"
+  | "bebida"
+  | "pet"
+  | "promocoes"
+  | "shopping"
+  | "gourmet"
+  | "exclusivo";
+
+export type ItemCardapio = {
+  id: string;
+  nome: string;
+  descricao: string;
+  preco: number;
+};
+
+export type Restaurante = {
+  id: string;
+  nome: string;
+  nota: number;
+  imagem: string;
+  tempoEntrega: string;
+  taxaEntrega: number;
+  cupom: boolean;
+  categorias: CategoriaIfoodId[];
+  cardapio: ItemCardapio[];
+};
+
+export type ItemCarrinho = {
+  itemId: string;
+  nome: string;
+  preco: number;
+  quantidade: number;
+};
+
+export type PedidoSalvo = {
+  id: string;
+  restauranteId: string;
+  restauranteNome: string;
+  itens: ItemCarrinho[];
+  subtotal: number;
+  taxaEntrega: number;
+  total: number;
+  data: string;
+  postId?: number;
+};
