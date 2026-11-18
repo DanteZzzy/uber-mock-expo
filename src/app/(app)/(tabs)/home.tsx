@@ -54,7 +54,10 @@ export default function Home() {
       />
 
       {abaSelecionada === "uber" && (
-        <ConteudoUber motoristas={motoristas} />
+        <ConteudoUber
+          motoristas={motoristas}
+          onMudarAba={setAbaSelecionada}
+        />
       )}
 
       {abaSelecionada === "envios" && <ConteudoEnvios />}
