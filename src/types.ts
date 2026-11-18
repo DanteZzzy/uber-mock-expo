@@ -160,3 +160,8 @@ export type CategoriaIfood = {
   icon: string;
   badge?: string;
 };
+
+export type Carrinho = {
+  restauranteId: string | null;
+  itens: ItemCarrinho[];
+};
