@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useMemo } from "react";
 import {
+  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -15,14 +16,17 @@ import { CartaoAviso } from "../../../components/atividade/CartaoAviso";
 import { CartaoDestaque } from "../../../components/atividade/CartaoDestaque";
 import { ItemAtividade } from "../../../components/atividade/ItemAtividade";
 import {
+  Atividade,
   atividadeDestaque,
   atividadesAnteriores,
   avisoAtividade,
 } from "../../../data/atividades";
+import { useArmazenamento } from "../../../hooks/useArmazenamento";
 import { useTema } from "../../../theme/TemaContext";
 import type { Cores } from "../../../theme/temas";
+import type { ViagemSalva } from "../../../types";
 
-export default function Atividade() {
+export default function AtividadeTela() {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const duasColunas = width >= 900;
@@ -30,6 +34,28 @@ export default function Atividade() {
 
   const { cores } = useTema();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
+
+  // Carrega viagens persistidas no AsyncStorage
+  const [viagensSalvas] = useArmazenamento<ViagemSalva[]>("@uber_viagens", []);
+
+  // Combina as viagens novas com as viagens mockadas existentes
+  const todasAtividades = useMemo(() => {
+    const doStorage: Atividade[] = viagensSalvas.map((v) => ({
+      id: v.id,
+      destino: v.destino,
+      data: v.data,
+      valor: v.valor,
+      detalhe:
+        v.detalhe ??
+        (v.status === "cancelada"
+          ? "Cancelada"
+          : v.status === "concluida"
+            ? "Concluída"
+            : undefined),
+    }));
+
+    return [...doStorage, ...atividadesAnteriores];
+  }, [viagensSalvas]);
 
   function abrirDetalhe(id: string) {
     router.push(`/viagem/${id}`);
@@ -48,7 +74,15 @@ export default function Atividade() {
 
         <View style={styles.cabecalhoSecao}>
           <Text style={styles.secao}>Anteriores</Text>
-          <Pressable style={styles.filtro}>
+          <Pressable
+            style={styles.filtro}
+            onPress={() =>
+              Alert.alert(
+                "Filtro de Atividades",
+                "Exibindo todas as viagens e solicitações recentes.",
+              )
+            }
+          >
             <Ionicons
               name="options-outline"
               size={22}
@@ -59,18 +93,28 @@ export default function Atividade() {
 
         <View style={duasColunas ? styles.colunas : undefined}>
           <View style={duasColunas ? styles.coluna : undefined}>
-            <CartaoAviso
-              titulo={avisoAtividade.titulo}
-              acao={avisoAtividade.acao}
-              emoji={avisoAtividade.emoji}
-            />
+            <Pressable
+              onPress={() =>
+                Alert.alert(
+                  "Clube Plus",
+                  "Seus créditos foram aplicados na sua conta com sucesso!",
+                )
+              }
+            >
+              <CartaoAviso
+                titulo={avisoAtividade.titulo}
+                acao={avisoAtividade.acao}
+                emoji={avisoAtividade.emoji}
+              />
+            </Pressable>
+
             <Pressable onPress={() => abrirDetalhe(atividadeDestaque.id)}>
               <CartaoDestaque atividade={atividadeDestaque} />
             </Pressable>
           </View>
 
           <View style={duasColunas ? styles.coluna : undefined}>
-            {atividadesAnteriores.map((atividade) => (
+            {todasAtividades.map((atividade) => (
               <Pressable
                 key={atividade.id}
                 onPress={() => abrirDetalhe(atividade.id)}
