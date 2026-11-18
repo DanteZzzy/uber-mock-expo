@@ -1,10 +1,12 @@
+import { useRouter } from "expo-router";
 import { useMemo } from "react";
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
-    useWindowDimensions,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -23,6 +25,7 @@ export default function Opcoes() {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const desktop = width >= 900;
+  const router = useRouter();
 
   const { cores } = useTema();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
@@ -32,6 +35,42 @@ export default function Opcoes() {
   const larguraCartao = Math.floor(
     (larguraConteudo - ESPACO * (COLUNAS - 1)) / COLUNAS,
   );
+
+  function aoTocarOpcao(id: string) {
+    if (id === "viagem") {
+      router.push({
+        pathname: "/pedir-viagem",
+        params: { categoria: "uber" },
+      });
+    } else if (id === "moto") {
+      router.push({
+        pathname: "/pedir-viagem",
+        params: { categoria: "moto" },
+      });
+    } else if (id === "reserve") {
+      router.push({
+        pathname: "/pedir-viagem",
+        params: { categoria: "comfort" },
+      });
+    } else if (id === "comida") {
+      router.push("/home");
+    } else if (id === "enviar") {
+      Alert.alert(
+        "Envios",
+        "Acesse a aba Envios na tela inicial para enviar e receber encomendas com entregadores parceiros.",
+      );
+    } else if (id === "teens") {
+      Alert.alert(
+        "Uber Teens",
+        "Contas exclusivas para jovens de 13 a 17 anos com recursos de segurança e acompanhamento ao vivo pelos responsáveis.",
+      );
+    } else if (id === "seniors") {
+      Alert.alert(
+        "Uber Seniors",
+        "Serviço com assistência dedicada e veículos com acessibilidade facilitada.",
+      );
+    }
+  }
 
   return (
     <ScrollView
@@ -59,6 +98,7 @@ export default function Opcoes() {
                 key={opcao.id}
                 opcao={opcao}
                 style={{ width: larguraCartao }}
+                onPress={() => aoTocarOpcao(opcao.id)}
               />
             ))}
           </View>
@@ -70,6 +110,7 @@ export default function Opcoes() {
                   key={opcao.id}
                   opcao={opcao}
                   style={styles.cartaoFlex}
+                  onPress={() => aoTocarOpcao(opcao.id)}
                 />
               ))}
             </View>
@@ -80,6 +121,7 @@ export default function Opcoes() {
                   key={opcao.id}
                   opcao={opcao}
                   style={styles.cartaoFlex}
+                  onPress={() => aoTocarOpcao(opcao.id)}
                 />
               ))}
             </View>
