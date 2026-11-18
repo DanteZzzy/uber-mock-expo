@@ -40,6 +40,10 @@ export default function AppLayout() {
         options={{ title: "Acompanhar viagem", headerBackTitle: "Voltar" }}
       />
       <Stack.Screen
+        name="enderecos"
+        options={{ title: "Endereços salvos", headerBackTitle: "Voltar" }}
+      />
+      <Stack.Screen
         name="viagem/[id]"
         options={{ title: "Detalhes da viagem", headerBackTitle: "Voltar" }}
       />
