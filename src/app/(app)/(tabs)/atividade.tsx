@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { useMemo } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useMemo } from "react";
 import {
   Alert,
   Pressable,
@@ -21,10 +21,17 @@ import {
   atividadesAnteriores,
   avisoAtividade,
 } from "../../../data/atividades";
+import { CHAVE_PEDIDOS } from "../../../data/restaurantes";
 import { useArmazenamento } from "../../../hooks/useArmazenamento";
 import { useTema } from "../../../theme/TemaContext";
 import type { Cores } from "../../../theme/temas";
-import type { ViagemSalva } from "../../../types";
+import type { PedidoSalvo, ViagemSalva } from "../../../types";
+import { formatarMoeda } from "../../../utils/formatacao";
+
+// Os ids novos terminam com o horário de criação (v_<ms>, p_<ms>) e servem para ordenar
+function carimbo(id: string): number {
+  return Number(id.split("_")[1]) || 0;
+}
 
 export default function AtividadeTela() {
   const insets = useSafeAreaInsets();
@@ -35,12 +42,27 @@ export default function AtividadeTela() {
   const { cores } = useTema();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
 
-  // Carrega viagens persistidas no AsyncStorage
-  const [viagensSalvas] = useArmazenamento<ViagemSalva[]>("@uber_viagens", []);
+  // Carrega viagens e pedidos persistidos no AsyncStorage
+  const [viagensSalvas, , , , recarregarViagens] = useArmazenamento<ViagemSalva[]>(
+    "@uber_viagens",
+    [],
+  );
+  const [pedidosSalvos, , , , recarregarPedidos] = useArmazenamento<PedidoSalvo[]>(
+    CHAVE_PEDIDOS,
+    [],
+  );
 
-  // Combina as viagens novas com as viagens mockadas existentes
+  // As abas continuam montadas: relê o armazenamento sempre que a tela ganha foco
+  useFocusEffect(
+    useCallback(() => {
+      recarregarViagens();
+      recarregarPedidos();
+    }, [recarregarViagens, recarregarPedidos]),
+  );
+
+  // Combina viagens e pedidos gravados (mais recentes primeiro) com as atividades mockadas
   const todasAtividades = useMemo(() => {
-    const doStorage: Atividade[] = viagensSalvas.map((v) => ({
+    const viagens: Atividade[] = viagensSalvas.map((v) => ({
       id: v.id,
       destino: v.destino,
       data: v.data,
@@ -52,10 +74,27 @@ export default function AtividadeTela() {
           : v.status === "concluida"
             ? "Concluída"
             : undefined),
+      tipo: "viagem",
     }));
 
-    return [...doStorage, ...atividadesAnteriores];
-  }, [viagensSalvas]);
+    const pedidos: Atividade[] = pedidosSalvos.map((p) => {
+      const quantidade = p.itens.reduce((soma, i) => soma + i.quantidade, 0);
+      return {
+        id: p.id,
+        destino: p.restauranteNome,
+        data: p.data,
+        valor: formatarMoeda(p.total),
+        detalhe: `${quantidade} ${quantidade === 1 ? "item" : "itens"}`,
+        tipo: "comida",
+      };
+    });
+
+    const gravadas = [...viagens, ...pedidos].sort(
+      (a, b) => carimbo(b.id) - carimbo(a.id),
+    );
+
+    return [...gravadas, ...atividadesAnteriores];
+  }, [viagensSalvas, pedidosSalvos]);
 
   function abrirDetalhe(id: string) {
     router.push(`/viagem/${id}`);
