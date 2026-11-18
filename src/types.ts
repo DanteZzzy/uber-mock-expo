@@ -166,7 +166,7 @@ export type Carrinho = {
   itens: ItemCarrinho[];
 };
 
-export type TipoAtividade = "viagem" | "comida";
+export type TipoAtividade = "viagem" | "comida" | "envio";
 
 export type TipoEnvio =
   | "encomenda"
