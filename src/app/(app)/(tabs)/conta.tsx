@@ -8,15 +8,12 @@ import CabecalhoConta from "../../../components/CabecalhoConta";
 import CardPromocional from "../../../components/CardPromocional";
 import LinhaPerfil from "../../../components/LinhaPerfil";
 import StatusBadges from "../../../components/StatusBadges";
+import { useAuth } from "../../../context/AuthContext";
 import { useTema } from "../../../theme/TemaContext";
 import type { Cores } from "../../../theme/temas";
 
-const USUARIO_MOCK = {
-  nome: "Marcos Andrade Ferreira",
-  avatarUrl: "https://i.pravatar.cc/300?img=33",
-  avaliacao: 4.96,
-  verificado: false,
-};
+const AVALIACAO_PADRAO = 4.96;
+const AVATAR_PADRAO = "https://i.pravatar.cc/300?img=33";
 
 const ACOES_RAPIDAS = [
   { icon: "help-buoy-outline", label: "Ajuda" },
@@ -28,7 +25,11 @@ const ACOES_RAPIDAS = [
 export default function Conta() {
   const insets = useSafeAreaInsets();
   const { cores } = useTema();
+  const { usuario } = useAuth();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
+
+  const nomeExibicao = usuario?.nome || "Usuário";
+  const avatarUrlExibicao = usuario?.avatarUrl || AVATAR_PADRAO;
 
   return (
     <ScrollView
@@ -36,12 +37,12 @@ export default function Conta() {
       contentContainerStyle={[styles.content, { paddingTop: insets.top + 16 }]}
     >
       <CabecalhoConta
-        nome={USUARIO_MOCK.nome}
-        avatarUrl={USUARIO_MOCK.avatarUrl}
+        nome={nomeExibicao}
+        avatarUrl={avatarUrlExibicao}
       />
       <StatusBadges
-        avaliacao={USUARIO_MOCK.avaliacao}
-        verificado={USUARIO_MOCK.verificado}
+        avaliacao={AVALIACAO_PADRAO}
+        verificado={false}
       />
       <LinhaPerfil label="Perfil Pessoal" />
 
