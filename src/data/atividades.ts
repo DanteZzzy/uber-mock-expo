@@ -1,9 +1,12 @@
+import type { TipoAtividade } from "../types";
+
 export type Atividade = {
   id: string;
   destino: string;
   data: string;
   valor: string;
   detalhe?: string;
+  tipo?: TipoAtividade;
 };
 
 export type AtividadeDestaque = Atividade & {
