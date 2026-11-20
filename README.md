@@ -19,14 +19,20 @@ O objetivo do projeto não é reproduzir o backend ou a lógica real do app, e s
 - **Entrar e sair:** o login leva à Home sem permitir voltar a ele (`router.replace`), e o botão **Sair**, na tela Conta, encerra a sessão
 - **Motoristas (API):** listagem na Home via `GET /users`, com pull-to-refresh e estados de carregamento, erro e vazio
 - **Detalhes do motorista:** rota dinâmica `motorista/[id]`, buscando dados via `GET /users/:id` com iniciais no avatar, informações de contato e empresa
+- **Avaliações do motorista:** listagem de avaliações recebidas via `GET /users/:id/posts`, exibida na tela de detalhes do motorista
 - **Avaliar motorista:** modal dinâmico `avaliar/[id]` com envio de avaliação via `POST /posts`, estado de loading no botão e alerta de confirmação
-- **Detalhe da viagem:** rota dinâmica `viagem/[id]`, aberta ao tocar em uma viagem da tela Atividade
+- **Fluxo de viagem completo:** pedir viagem (`pedir-viagem`), acompanhar em tempo real (`acompanhar-viagem`) e consultar detalhes de viagem salva (`viagem/[id]`)
+- **Filtros na Atividade:** filtragem por tipo (viagem, comida, envio) e busca textual por destino
+- **Perfil editável:** edição de nome, e-mail, telefone e foto (por URL), com as alterações refletidas em toda a UI através do `AuthContext`
+- **Carteira:** saldo simulado, listagem de cartões com adição e remoção, persistência dos dados via AsyncStorage
+- **Central de Ajuda:** FAQ expansível com 8 perguntas frequentes
+- **Endereços salvos:** busca de endereço por CEP via ViaCEP e listagem dos endereços salvos
 - **Tema claro/escuro:** alternado por um botão na tela Conta, com a escolha mantida ao reabrir o app
 - **Layout responsivo:** versão de celular em telas estreitas e versão com colunas em telas largas (web)
 
 ## 🌐 Consumo da API
 
-O aplicativo consome uma API REST para listagem, consulta de detalhes e envio de avaliações dos motoristas.
+O aplicativo consome uma API REST para listagem, consulta de detalhes e envio de avaliações dos motoristas, e o serviço ViaCEP para busca de endereços por CEP.
 
 ### Configuração e URL Base
 - **URL Padrão:** `https://jsonplaceholder.typicode.com`
@@ -35,11 +41,24 @@ O aplicativo consome uma API REST para listagem, consulta de detalhes e envio de
 ### Endpoints Consumidos
 - `GET /users`: Retorna a lista de motoristas exibidos no carrossel horizontal da tela inicial (`SecaoMotoristas`).
 - `GET /users/:id`: Retorna as informações detalhadas de um motorista específico na tela `motorista/[id]` (e-mail, cidade, telefone, empresa e website).
+- `GET /users/:id/posts`: Retorna as avaliações recebidas pelo motorista, exibidas na seção de avaliações da tela `motorista/[id]`.
 - `POST /posts`: Envia a avaliação criada pelo usuário na tela/modal `avaliar/[id]`, enviando payload JSON (`{ title, body, userId }`) com cabeçalho `Content-Type: application/json; charset=UTF-8`.
+- **ViaCEP** `GET https://viacep.com.br/ws/{cep}/json/`: Busca dados de endereço a partir de um CEP informado na tela de endereços salvos. URL base configurável via `EXPO_PUBLIC_VIACEP_URL`.
 
 ### Camada de Serviços e Hook `useFetch`
 - **Serviço Centralizado (`src/services/api.ts`):** Todas as chamadas utilizam a função `req<T>`, que implementa verificação de status HTTP (`404 Não encontrado`, erros de rede) e tempo limite de 10 segundos via `AbortController`.
 - **Hook `useFetch` (`src/hooks/useFetch.ts`):** Gerencia reatividade dos estados `dados`, `loading` e `erro`, com suporte a cancelamento ao desmontar a tela, prevenção de respostas fora de ordem (`race conditions`), recarregamento manual (`recarregar`) e pull-to-refresh (`atualizar`).
+
+## ⚙️ Variáveis de Ambiente
+
+O projeto lê as seguintes variáveis de ambiente em tempo de build:
+
+```env
+EXPO_PUBLIC_API_URL=https://jsonplaceholder.typicode.com
+EXPO_PUBLIC_VIACEP_URL=https://viacep.com.br/ws
+```
+
+O arquivo `.env.example` contém o template com todos os valores padrão. Copie-o para `.env` e ajuste conforme necessário. Caso o arquivo `.env` não exista, as URLs padrão acima são usadas automaticamente pelo código.
 
 ## 🧪 Testando os Estados da Aplicação (Modo Avião)
 
@@ -50,14 +69,20 @@ Para validar o tratamento resiliente de erros, estados de carregamento e recuper
 2. **Simular perda de conexão:** Ative o **Modo Avião** (Airplane Mode) no aparelho ou desligue o Wi-Fi e dados móveis.
 3. **Verificar Estado de Erro na Home:**
    - Execute o gesto de puxar para atualizar (*pull-to-refresh*) na lista de motoristas.
-   - O aplicativo capturará a falha de rede e exibirá o componente `EstadoErro` com o ícone de offline e a mensagem *"Sem conexão com o servidor."*.
+   - O aplicativo capturará a falha de rede e exibirá o componente `EstadoErro` com o ícone de offline e a mensagem *"Sem conexão com o servidor."*
 4. **Verificar Estado de Erro no Detalhe do Motorista:**
    - Ainda em modo avião, tente acessar o detalhe de um motorista ou recarregar a tela `motorista/[id]`.
    - O componente `EstadoErro` será apresentado com o botão **"Tentar de novo"**.
-5. **Verificar Erro de Envio na Avaliação:**
+5. **Avaliações do motorista offline:**
+   - Em modo avião, acesse a tela de detalhes do motorista.
+   - A seção de avaliações exibirá um erro de rede no lugar da lista de avaliações.
+6. **Verificar Erro de Envio na Avaliação:**
    - Na tela `avaliar/[id]`, preencha o formulário e clique em **Enviar avaliação**.
    - O botão ficará em estado de carregamento e, em seguida, exibirá um `Alert` informando o erro de envio sem fechar o formulário.
-6. **Recuperação da Conexão:**
+7. **Busca ViaCEP offline:**
+   - Em modo avião, acesse a tela de endereços salvos e tente buscar um CEP.
+   - A tela exibirá a mensagem de erro *"Sem conexão com o servidor."*
+8. **Recuperação da Conexão:**
    - Desative o Modo Avião e restabeleça a conexão com a internet.
    - Pressione o botão **"Tentar de novo"** no componente de erro. Os dados serão requisitados novamente e o estado de sucesso será renderizado normalmente.
 
@@ -95,13 +120,19 @@ A Home tem três abas no topo: **Uber**, **Envios** e **iFood**.
 ## 🧭 Fluxo de navegação
 
 ```
-/                      → Redirect: com sessão vai para /home, sem sessão vai para /login
-(auth)/login           → ao entrar: router.replace('/home')
-(app)/_layout          → guarda: sem sessão, Redirect para /login
-(app)/(tabs)           → home, opcoes, atividade, conta
-(app)/viagem/[id]      → detalhe da viagem (abre por cima das abas)
-(app)/motorista/[id]   → detalhe do motorista (abre ao tocar no card da Home)
-(app)/avaliar/[id]     → avaliação do motorista (modal aberto a partir do detalhe)
+/                        → Redirect: com sessão vai para /home, sem sessão vai para /login
+(auth)/login             → ao entrar: router.replace('/home')
+(app)/_layout            → guarda: sem sessão, Redirect para /login
+(app)/(tabs)             → home, opcoes, atividade, conta
+(app)/pedir-viagem       → fluxo de pedido de viagem
+(app)/acompanhar-viagem  → acompanhamento de viagem em andamento
+(app)/viagem/[id]        → detalhe de viagem salva (abre por cima das abas)
+(app)/motorista/[id]     → detalhe do motorista (abre ao tocar no card da Home)
+(app)/avaliar/[id]       → avaliação do motorista (modal aberto a partir do detalhe)
+(app)/perfil             → Edição de perfil (nome, e-mail, telefone, foto)
+(app)/carteira           → Carteira (saldo e cartões)
+(app)/ajuda              → Central de Ajuda (FAQ)
+(app)/enderecos          → Endereços salvos (ViaCEP)
 ```
 
 > A sessão é mantida apenas em memória. Ao fechar o app ou recarregar a página no navegador, é preciso entrar novamente.
@@ -119,6 +150,9 @@ cd uber-mock-expo
 
 # Instale as dependências
 npm install
+
+# (Opcional) Configure as variáveis de ambiente
+cp .env.example .env
 
 # Inicie o servidor de desenvolvimento
 npx expo start
@@ -145,7 +179,7 @@ Alternativa para testar no celular, sem o Expo Go:
 ```
 src/
   context/
-    AuthContext.tsx        # Sessão do usuário (entrar / sair)
+    AuthContext.tsx        # Sessão do usuário (entrar / sair / editar perfil)
   app/
     _layout.tsx            # Stack raiz (TemaProvider + AuthProvider)
     index.tsx              # Decide: Home (com sessão) ou Login (sem sessão)
@@ -160,12 +194,18 @@ src/
         opcoes.tsx
         atividade.tsx
         conta.tsx
+      pedir-viagem.tsx     # Fluxo de pedido de viagem
+      acompanhar-viagem.tsx # Acompanhamento de viagem em andamento
       viagem/
         [id].tsx           # Detalhe da viagem (rota dinâmica)
       motorista/
         [id].tsx           # Detalhe do motorista (rota dinâmica)
       avaliar/
         [id].tsx           # Modal de avaliação do motorista
+      perfil.tsx           # Edição de perfil (nome, e-mail, telefone, foto)
+      carteira.tsx         # Carteira (saldo e cartões)
+      ajuda.tsx            # Central de Ajuda (FAQ)
+      enderecos.tsx        # Endereços salvos (ViaCEP)
   components/              # Componentes reutilizáveis
   data/                    # Dados mockados
   hooks/                   # Hooks customizados (useFetch)

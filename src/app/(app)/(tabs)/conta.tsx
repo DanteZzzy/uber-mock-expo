@@ -1,9 +1,10 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useMemo } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BotaoAcaoRapida from "../../../components/BotaoAcaoRapida";
-import { BotaoSair } from '../../../components/BotaoSair';
+import { BotaoSair } from "../../../components/BotaoSair";
 import CabecalhoConta from "../../../components/CabecalhoConta";
 import CardPromocional from "../../../components/CardPromocional";
 import LinhaPerfil from "../../../components/LinhaPerfil";
@@ -16,16 +17,17 @@ const AVALIACAO_PADRAO = 4.96;
 const AVATAR_PADRAO = "https://i.pravatar.cc/300?img=33";
 
 const ACOES_RAPIDAS = [
-  { icon: "help-buoy-outline", label: "Ajuda" },
-  { icon: "wallet-outline", label: "Carteira" },
-  { icon: "shield-checkmark-outline", label: "Segurança" },
-  { icon: "mail-outline", label: "Mensagens" },
+  { icon: "help-buoy-outline", label: "Ajuda", rota: "/ajuda" as const },
+  { icon: "wallet-outline", label: "Carteira", rota: "/carteira" as const },
+  { icon: "shield-checkmark-outline", label: "Segurança", rota: undefined },
+  { icon: "mail-outline", label: "Mensagens", rota: undefined },
 ] as const;
 
 export default function Conta() {
   const insets = useSafeAreaInsets();
   const { cores } = useTema();
   const { usuario } = useAuth();
+  const router = useRouter();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
 
   const nomeExibicao = usuario?.nome || "Usuário";
@@ -44,7 +46,7 @@ export default function Conta() {
         avaliacao={AVALIACAO_PADRAO}
         verificado={false}
       />
-      <LinhaPerfil label="Perfil Pessoal" />
+      <LinhaPerfil label="Perfil Pessoal" onPress={() => router.push("/perfil")} />
 
       <View style={styles.grid}>
         {ACOES_RAPIDAS.map((acao) => (
@@ -52,6 +54,7 @@ export default function Conta() {
             key={acao.label}
             icon={acao.icon}
             label={acao.label}
+            onPress={acao.rota ? () => router.push(acao.rota as never) : undefined}
           />
         ))}
       </View>
