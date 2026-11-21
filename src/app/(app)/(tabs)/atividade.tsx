@@ -1,8 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Alert,
+  FlatList,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -12,6 +14,9 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import EstadoCarregando from "../../../components/EstadoCarregando";
+import EstadoErro from "../../../components/EstadoErro";
+import EstadoVazio from "../../../components/EstadoVazio";
 import { CartaoAviso } from "../../../components/atividade/CartaoAviso";
 import { CartaoDestaque } from "../../../components/atividade/CartaoDestaque";
 import { ItemAtividade } from "../../../components/atividade/ItemAtividade";
@@ -24,40 +29,78 @@ import {
 import { CHAVE_ENVIOS, nomeDoTipoEnvio } from "../../../data/envios";
 import { CHAVE_PEDIDOS } from "../../../data/restaurantes";
 import { useArmazenamento } from "../../../hooks/useArmazenamento";
+import { useFetch } from "../../../hooks/useFetch";
 import { useTema } from "../../../theme/TemaContext";
 import type { Cores } from "../../../theme/temas";
-import type { EnvioSalvo, PedidoSalvo, ViagemSalva } from "../../../types";
+import type {
+  EnvioSalvo,
+  PedidoSalvo,
+  Post,
+  ViagemSalva,
+} from "../../../types";
 import { formatarMoeda } from "../../../utils/formatacao";
 
-// Os ids novos terminam com o horário de criação (v_<ms>, p_<ms>) e servem para ordenar
 function carimbo(id: string): number {
   return Number(id.split("_")[1]) || 0;
 }
 
+const BASE_API =
+  process.env.EXPO_PUBLIC_API_URL ?? "https://jsonplaceholder.typicode.com";
+
+async function buscarAtividadesApi(): Promise<Post[]> {
+  const controlador = new AbortController();
+  const timer = setTimeout(() => controlador.abort(), 8000);
+
+  try {
+    const resposta = await fetch(`${BASE_API}/users/1/posts`, {
+      cache: "no-store",
+      signal: controlador.signal,
+    });
+    if (!resposta.ok) throw new Error(`Falha ${resposta.status}`);
+    return (await resposta.json()) as Post[];
+  } catch (erro) {
+    if (erro instanceof Error && erro.name === "AbortError") {
+      throw new Error("A conexão demorou demais. Tente de novo.");
+    }
+    if (erro instanceof TypeError) {
+      throw new Error("Sem conexão com a internet.");
+    }
+    throw erro;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export default function AtividadeTela() {
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const duasColunas = width >= 900;
+  const telaBaixa = height < 760;
   const router = useRouter();
 
   const { cores } = useTema();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
 
-  // Carrega viagens e pedidos persistidos no AsyncStorage
-  const [viagensSalvas, , , , recarregarViagens] = useArmazenamento<ViagemSalva[]>(
-    "@uber_viagens",
-    [],
-  );
-  const [pedidosSalvos, , , , recarregarPedidos] = useArmazenamento<PedidoSalvo[]>(
-    CHAVE_PEDIDOS,
-    [],
-  );
+  const {
+    dados: postsApi,
+    loading: carregandoApi,
+    erro: erroApi,
+    recarregar: recarregarApi,
+  } = useFetch(buscarAtividadesApi);
+
+  const [atualizandoLista, setAtualizandoLista] = useState(false);
+
+  const [viagensSalvas, , , , recarregarViagens] = useArmazenamento<
+    ViagemSalva[]
+  >("@uber_viagens", []);
+  const [pedidosSalvos, , , , recarregarPedidos] = useArmazenamento<
+    PedidoSalvo[]
+  >(CHAVE_PEDIDOS, []);
   const [enviosSalvos, , , , recarregarEnvios] = useArmazenamento<EnvioSalvo[]>(
     CHAVE_ENVIOS,
     [],
   );
 
-  // As abas continuam montadas: relê o armazenamento sempre que a tela ganha foco
   useFocusEffect(
     useCallback(() => {
       recarregarViagens();
@@ -66,7 +109,20 @@ export default function AtividadeTela() {
     }, [recarregarViagens, recarregarPedidos, recarregarEnvios]),
   );
 
-  // Combina viagens e pedidos gravados (mais recentes primeiro) com as atividades mockadas
+  async function aoPuxarParaAtualizar() {
+    setAtualizandoLista(true);
+    try {
+      await Promise.all([
+        recarregarApi(),
+        recarregarViagens(),
+        recarregarPedidos(),
+        recarregarEnvios(),
+      ]);
+    } finally {
+      setAtualizandoLista(false);
+    }
+  }
+
   const todasAtividades = useMemo(() => {
     const viagens: Atividade[] = viagensSalvas.map((v) => ({
       id: v.id,
@@ -108,78 +164,187 @@ export default function AtividadeTela() {
       (a, b) => carimbo(b.id) - carimbo(a.id),
     );
 
-    return [...gravadas, ...atividadesAnteriores];
-  }, [viagensSalvas, pedidosSalvos, enviosSalvos]);
+    const daApi: Atividade[] = (postsApi ?? []).slice(0, 3).map((post) => ({
+      id: `api_${post.id}`,
+      destino: post.title.slice(0, 36),
+      data: "Sincronizado via API",
+      valor: formatarMoeda(14.9 + post.id * 3.5),
+      detalhe: `Registro #${post.id}`,
+      tipo: "viagem",
+    }));
+
+    return [...gravadas, ...atividadesAnteriores, ...daApi];
+  }, [viagensSalvas, pedidosSalvos, enviosSalvos, postsApi]);
 
   function abrirDetalhe(id: string) {
+    if (id.startsWith("api_")) {
+      const msg = "Este registro foi sincronizado da API de demonstração.";
+      if (Platform.OS === "web") {
+        window.alert(msg);
+      } else {
+        Alert.alert("Histórico sincronizado", msg);
+      }
+      return;
+    }
     router.push(`/viagem/${id}`);
   }
 
-  return (
-    <ScrollView
-      style={styles.tela}
-      contentContainerStyle={{
-        paddingTop: insets.top + (duasColunas ? 32 : 36),
-        paddingBottom: 120,
-      }}
-    >
-      <View style={[styles.conteudo, { maxWidth: duasColunas ? 1080 : 480 }]}>
-        <Text style={styles.titulo}>Atividade</Text>
+  // Estado 1: Carregando
+  if (carregandoApi) {
+    return (
+      <View
+        style={[
+          styles.telaCentral,
+          { paddingTop: insets.top + 32, paddingBottom: 120 },
+        ]}
+      >
+        <EstadoCarregando mensagem="Buscando histórico de atividades..." />
+      </View>
+    );
+  }
 
-        <View style={styles.cabecalhoSecao}>
-          <Text style={styles.secao}>Anteriores</Text>
-          <Pressable
-            style={styles.filtro}
-            onPress={() =>
-              Alert.alert(
-                "Filtro de Atividades",
-                "Exibindo todas as viagens e solicitações recentes.",
-              )
-            }
-          >
-            <Ionicons
-              name="options-outline"
-              size={22}
-              color={cores.textoPrincipal}
-            />
-          </Pressable>
-        </View>
+  // Estado 2: Erro de rede / Modo Avião
+  if (erroApi) {
+    return (
+      <View
+        style={[
+          styles.telaCentral,
+          { paddingTop: insets.top + 32, paddingBottom: 120 },
+        ]}
+      >
+        <EstadoErro mensagem={erroApi} onTentarDeNovo={recarregarApi} />
+      </View>
+    );
+  }
 
-        <View style={duasColunas ? styles.colunas : undefined}>
-          <View style={duasColunas ? styles.coluna : undefined}>
-            <Pressable
-              onPress={() =>
-                Alert.alert(
-                  "Clube Plus",
-                  "Seus créditos foram aplicados na sua conta com sucesso!",
-                )
-              }
-            >
-              <CartaoAviso
-                titulo={avisoAtividade.titulo}
-                acao={avisoAtividade.acao}
-                emoji={avisoAtividade.emoji}
+  const painelDestaques = (
+    <View style={telaBaixa && duasColunas ? styles.destaquesCompactos : undefined}>
+      <Pressable
+        onPress={() => {
+          const msg = "Seus créditos foram aplicados na sua conta com sucesso!";
+          if (Platform.OS === "web") {
+            window.alert(msg);
+          } else {
+            Alert.alert("Clube Plus", msg);
+          }
+        }}
+      >
+        <CartaoAviso
+          titulo={avisoAtividade.titulo}
+          acao={avisoAtividade.acao}
+          emoji={avisoAtividade.emoji}
+        />
+      </Pressable>
+
+      <Pressable onPress={() => abrirDetalhe(atividadeDestaque.id)}>
+        <CartaoDestaque atividade={atividadeDestaque} />
+      </Pressable>
+    </View>
+  );
+
+  // Desktop: lado esquerdo fixo (com scroll de segurança apenas se o monitor for baixo) e lista da direita rolando
+  if (duasColunas) {
+    return (
+      <View
+        style={[
+          styles.tela,
+          {
+            paddingTop: insets.top + 24,
+          },
+        ]}
+      >
+        <View style={[styles.conteudoDesktop, { maxWidth: 1080 }]}>
+          <Text style={[styles.titulo, telaBaixa && styles.tituloCompacto]}>
+            Atividade
+          </Text>
+
+          <View style={styles.cabecalhoSecao}>
+            <Text style={styles.secao}>Anteriores</Text>
+            <Pressable style={styles.filtro} onPress={aoPuxarParaAtualizar}>
+              <Ionicons
+                name="refresh-outline"
+                size={22}
+                color={cores.textoPrincipal}
               />
-            </Pressable>
-
-            <Pressable onPress={() => abrirDetalhe(atividadeDestaque.id)}>
-              <CartaoDestaque atividade={atividadeDestaque} />
             </Pressable>
           </View>
 
-          <View style={duasColunas ? styles.coluna : undefined}>
-            {todasAtividades.map((atividade) => (
-              <Pressable
-                key={atividade.id}
-                onPress={() => abrirDetalhe(atividade.id)}
-              >
-                <ItemAtividade atividade={atividade} />
-              </Pressable>
-            ))}
+          <View style={styles.colunas}>
+            <ScrollView
+              style={styles.coluna}
+              contentContainerStyle={{ paddingBottom: 112 }}
+              showsVerticalScrollIndicator={false}
+              scrollEnabled={telaBaixa}
+            >
+              {painelDestaques}
+            </ScrollView>
+
+            <FlatList
+              style={styles.coluna}
+              contentContainerStyle={{ paddingBottom: 120 }}
+              showsVerticalScrollIndicator={false}
+              data={todasAtividades}
+              keyExtractor={(item) => String(item.id)}
+              ListEmptyComponent={
+                <EstadoVazio mensagem="Nenhuma atividade registrada até o momento." />
+              }
+              refreshing={atualizandoLista}
+              onRefresh={aoPuxarParaAtualizar}
+              renderItem={({ item }) => (
+                <Pressable onPress={() => abrirDetalhe(item.id)}>
+                  <ItemAtividade atividade={item} />
+                </Pressable>
+              )}
+            />
           </View>
         </View>
       </View>
-    </ScrollView>
+    );
+  }
+
+  // Mobile: coluna única com FlatList + Pull-to-Refresh
+  return (
+    <FlatList
+      style={styles.tela}
+      contentContainerStyle={[
+        styles.conteudoMobile,
+        {
+          maxWidth: 480,
+          paddingTop: insets.top + 36,
+          paddingBottom: 120,
+        },
+      ]}
+      data={todasAtividades}
+      keyExtractor={(item) => String(item.id)}
+      ListHeaderComponent={
+        <View>
+          <Text style={styles.titulo}>Atividade</Text>
+
+          <View style={styles.cabecalhoSecao}>
+            <Text style={styles.secao}>Anteriores</Text>
+            <Pressable style={styles.filtro} onPress={aoPuxarParaAtualizar}>
+              <Ionicons
+                name="refresh-outline"
+                size={22}
+                color={cores.textoPrincipal}
+              />
+            </Pressable>
+          </View>
+
+          {painelDestaques}
+        </View>
+      }
+      ListEmptyComponent={
+        <EstadoVazio mensagem="Nenhuma atividade registrada até o momento." />
+      }
+      refreshing={atualizandoLista}
+      onRefresh={aoPuxarParaAtualizar}
+      renderItem={({ item }) => (
+        <Pressable onPress={() => abrirDetalhe(item.id)}>
+          <ItemAtividade atividade={item} />
+        </Pressable>
+      )}
+    />
   );
 }
 
@@ -189,7 +354,20 @@ const criarEstilos = (cores: Cores) =>
       flex: 1,
       backgroundColor: cores.fundo,
     },
-    conteudo: {
+    telaCentral: {
+      flex: 1,
+      backgroundColor: cores.fundo,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 20,
+    },
+    conteudoDesktop: {
+      flex: 1,
+      width: "100%",
+      alignSelf: "center",
+      paddingHorizontal: 20,
+    },
+    conteudoMobile: {
       width: "100%",
       alignSelf: "center",
       paddingHorizontal: 20,
@@ -198,13 +376,17 @@ const criarEstilos = (cores: Cores) =>
       color: cores.textoPrincipal,
       fontSize: 36,
       fontWeight: "700",
-      marginBottom: 24,
+      marginBottom: 20,
+    },
+    tituloCompacto: {
+      fontSize: 30,
+      marginBottom: 12,
     },
     cabecalhoSecao: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      marginBottom: 16,
+      marginBottom: 14,
     },
     secao: {
       color: cores.textoPrincipal,
@@ -220,11 +402,16 @@ const criarEstilos = (cores: Cores) =>
       justifyContent: "center",
     },
     colunas: {
+      flex: 1,
       flexDirection: "row",
-      alignItems: "flex-start",
+      alignItems: "stretch",
       gap: 32,
     },
     coluna: {
       flex: 1,
+    },
+    destaquesCompactos: {
+      transform: [{ scale: 0.96 }],
+      transformOrigin: "top left",
     },
   });
