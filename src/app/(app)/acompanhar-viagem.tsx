@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -24,6 +25,16 @@ import { iniciais } from "../../utils/iniciais";
 
 type EstagioViagem = "buscando" | "a_caminho" | "em_andamento" | "chegou";
 
+function formatarDataAtual() {
+  const agora = new Date();
+  const mes = agora
+    .toLocaleString("pt-BR", { month: "short" })
+    .replace(".", "");
+  const hora = agora.getHours().toString().padStart(2, "0");
+  const minuto = agora.getMinutes().toString().padStart(2, "0");
+  return `${agora.getDate()} de ${mes} • ${hora}:${minuto}`;
+}
+
 export default function AcompanharViagem() {
   const params = useLocalSearchParams<{
     id: string;
@@ -39,7 +50,6 @@ export default function AcompanharViagem() {
   const { cores } = useTema();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
 
-  // Consumo da API de motoristas (/users) conforme Seção 4
   const {
     dados: motoristas,
     loading: loadingApi,
@@ -47,7 +57,6 @@ export default function AcompanharViagem() {
     recarregar,
   } = useFetch(api.usuarios);
 
-  // Armazenamento local de viagens conforme Seção 5
   const [, setViagens] = useArmazenamento<ViagemSalva[]>("@uber_viagens", []);
 
   const [estagio, setEstagio] = useState<EstagioViagem>("buscando");
@@ -56,7 +65,6 @@ export default function AcompanharViagem() {
   const [tempoRestanteMin, setTempoRestanteMin] = useState(4);
   const [processandoAcao, setProcessandoAcao] = useState(false);
 
-  // Atribui um motorista vindo da API quando a requisição retornar
   useEffect(() => {
     if (motoristas && motoristas.length > 0 && !motoristaAtribuido) {
       const idx = Math.floor(Math.random() * motoristas.length);
@@ -75,15 +83,13 @@ export default function AcompanharViagem() {
         id: selecionado.id,
         nome: selecionado.name,
         telefone: selecionado.phone,
-        veiculo:
-          veiculos[Math.floor(Math.random() * veiculos.length)],
+        veiculo: veiculos[Math.floor(Math.random() * veiculos.length)],
         placa: placas[Math.floor(Math.random() * placas.length)],
         avaliacao: 4.95,
       });
     }
   }, [motoristas, motoristaAtribuido]);
 
-  // Simula o progresso da viagem com temporizador
   useEffect(() => {
     if (estagio === "buscando") {
       const timer = setTimeout(() => {
@@ -101,8 +107,44 @@ export default function AcompanharViagem() {
     }
   }, [estagio]);
 
-  // Função para cancelar a viagem
-  async function confirmarCancelamento() {
+  async function executarCancelamento() {
+    setProcessandoAcao(true);
+    try {
+      const viagemCancelada: ViagemSalva = {
+        id: params.id || `v_${Date.now()}`,
+        origem: params.origem || "Origem não informada",
+        destino: params.destino || "Destino não informado",
+        categoria: params.categoria || "UberX",
+        valor: "R$ 0,00",
+        data: formatarDataAtual(),
+        detalhe: "Cancelada",
+        status: "cancelada",
+        motorista: motoristaAtribuido ?? undefined,
+        postId: params.postId ? Number(params.postId) : undefined,
+      };
+
+      await setViagens((anteriores) => [
+        viagemCancelada,
+        ...anteriores.filter((v) => v.id !== viagemCancelada.id),
+      ]);
+
+      router.replace("/atividade");
+    } finally {
+      setProcessandoAcao(false);
+    }
+  }
+
+  function confirmarCancelamento() {
+    if (Platform.OS === "web") {
+      const confirmou = window.confirm(
+        "Tem certeza que deseja cancelar a solicitação?",
+      );
+      if (confirmou) {
+        executarCancelamento();
+      }
+      return;
+    }
+
     Alert.alert(
       "Cancelar viagem",
       "Tem certeza que deseja cancelar a solicitação?",
@@ -111,86 +153,51 @@ export default function AcompanharViagem() {
         {
           text: "Sim, cancelar",
           style: "destructive",
-          onPress: async () => {
-            setProcessandoAcao(true);
-
-            const agora = new Date();
-            const dataFormatada = `${agora.getDate()} de ${agora.toLocaleString(
-              "pt-BR",
-              { month: "short" },
-            )} • ${agora.getHours().toString().padStart(2, "0")}:${agora
-              .getMinutes()
-              .toString()
-              .padStart(2, "0")}`;
-
-            const viagemCancelada: ViagemSalva = {
-              id: params.id,
-              origem: params.origem,
-              destino: params.destino,
-              categoria: params.categoria,
-              valor: "R$ 0,00",
-              data: dataFormatada,
-              detalhe: "Cancelada",
-              status: "cancelada",
-              motorista: motoristaAtribuido ?? undefined,
-              postId: params.postId ? Number(params.postId) : undefined,
-            };
-
-            await setViagens((anteriores) => [
-              viagemCancelada,
-              ...anteriores.filter((v) => v.id !== params.id),
-            ]);
-
-            setProcessandoAcao(false);
-            router.replace("/(tabs)/atividade");
-          },
+          onPress: executarCancelamento,
         },
       ],
     );
   }
 
-  // Função para concluir a viagem
   async function concluirViagem() {
     setProcessandoAcao(true);
+    try {
+      const idViagem = params.id || `v_${Date.now()}`;
+      const viagemConcluida: ViagemSalva = {
+        id: idViagem,
+        origem: params.origem || "Origem não informada",
+        destino: params.destino || "Destino não informado",
+        categoria: params.categoria || "UberX",
+        valor: params.valor || "R$ 0,00",
+        data: formatarDataAtual(),
+        detalhe: "Concluída",
+        status: "concluida",
+        motorista: motoristaAtribuido ?? undefined,
+        postId: params.postId ? Number(params.postId) : undefined,
+      };
 
-    const agora = new Date();
-    const dataFormatada = `${agora.getDate()} de ${agora.toLocaleString(
-      "pt-BR",
-      { month: "short" },
-    )} • ${agora.getHours().toString().padStart(2, "0")}:${agora
-      .getMinutes()
-      .toString()
-      .padStart(2, "0")}`;
+      await setViagens((anteriores) => [
+        viagemConcluida,
+        ...anteriores.filter((v) => v.id !== idViagem),
+      ]);
 
-    const viagemConcluida: ViagemSalva = {
-      id: params.id,
-      origem: params.origem,
-      destino: params.destino,
-      categoria: params.categoria,
-      valor: params.valor,
-      data: dataFormatada,
-      detalhe: "Concluída",
-      status: "concluida",
-      motorista: motoristaAtribuido ?? undefined,
-      postId: params.postId ? Number(params.postId) : undefined,
-    };
+      if (Platform.OS === "web") {
+        window.alert("Viagem Concluída! Você chegou ao seu destino.");
+        router.replace(`/viagem/${idViagem}`);
+        return;
+      }
 
-    await setViagens((anteriores) => [
-      viagemConcluida,
-      ...anteriores.filter((v) => v.id !== params.id),
-    ]);
-
-    setProcessandoAcao(false);
-
-    Alert.alert("Viagem Concluída!", "Você chegou ao seu destino.", [
-      {
-        text: "Ver Detalhes",
-        onPress: () => router.replace(`/viagem/${params.id}`),
-      },
-    ]);
+      Alert.alert("Viagem Concluída!", "Você chegou ao seu destino.", [
+        {
+          text: "Ver Detalhes",
+          onPress: () => router.replace(`/viagem/${idViagem}`),
+        },
+      ]);
+    } finally {
+      setProcessandoAcao(false);
+    }
   }
 
-  // Trata os 3 estados da API conforme Seção 4
   if (loadingApi) {
     return (
       <View style={styles.telaCentral}>
@@ -221,7 +228,6 @@ export default function AcompanharViagem() {
   return (
     <ScrollView style={styles.tela} contentContainerStyle={styles.scroll}>
       <View style={styles.conteudo}>
-        {/* Painel do Mapa Simulado */}
         <View style={styles.mapaSimulado}>
           <Ionicons
             name="navigate-circle"
@@ -240,7 +246,6 @@ export default function AcompanharViagem() {
           </View>
         </View>
 
-        {/* Card de Status da Corrida */}
         <View style={styles.cardStatus}>
           <View style={styles.cabecalhoStatus}>
             <View>
@@ -260,7 +265,6 @@ export default function AcompanharViagem() {
             </View>
           </View>
 
-          {/* Dados do Motorista Parceiro (Vindo da API /users) */}
           {motoristaAtribuido && (
             <View style={styles.blocoMotorista}>
               <View style={styles.avatarMotorista}>
@@ -289,12 +293,14 @@ export default function AcompanharViagem() {
               <TouchableOpacity
                 style={styles.botaoLigar}
                 activeOpacity={0.7}
-                onPress={() =>
-                  Alert.alert(
-                    "Contato",
-                    `Ligando para ${motoristaAtribuido.nome} (${motoristaAtribuido.telefone ?? "Sem número"})`,
-                  )
-                }
+                onPress={() => {
+                  const msg = `Ligando para ${motoristaAtribuido.nome} (${motoristaAtribuido.telefone ?? "Sem número"})`;
+                  if (Platform.OS === "web") {
+                    window.alert(msg);
+                  } else {
+                    Alert.alert("Contato", msg);
+                  }
+                }}
               >
                 <Ionicons
                   name="call"
@@ -305,7 +311,6 @@ export default function AcompanharViagem() {
             </View>
           )}
 
-          {/* Resumo do Trajeto */}
           <View style={styles.blocoTrajeto}>
             <View style={styles.linhaTrajeto}>
               <View style={styles.bolinhaOrigem} />
@@ -329,7 +334,6 @@ export default function AcompanharViagem() {
           </View>
         </View>
 
-        {/* Botões de Ação */}
         <View style={styles.acoes}>
           {estagio === "em_andamento" ? (
             <TouchableOpacity
@@ -341,9 +345,7 @@ export default function AcompanharViagem() {
               {processandoAcao ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
-                <Text style={styles.textoBotaoConcluir}>
-                  Concluir Viagem
-                </Text>
+                <Text style={styles.textoBotaoConcluir}>Concluir Viagem</Text>
               )}
             </TouchableOpacity>
           ) : (
