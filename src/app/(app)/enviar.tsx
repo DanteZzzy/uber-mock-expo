@@ -128,7 +128,6 @@ export default function Enviar() {
     setEnviando(true);
 
     try {
-      // POST /posts conforme Seção 4 (JSONPlaceholder simula o registro do envio)
       const postCriado = await api.criarPost({
         title: `Envio ${nomeDoTipoEnvio(tipo)}: ${enderecoColeta.trim()} -> ${enderecoEntrega.trim()}`,
         body: `Remetente: ${remetenteNome.trim()} | Destinatário: ${destinatarioNome.trim()} | Item: ${item.trim()} (${nomeDoTamanhoEnvio(tamanho)}) | Valor: ${formatarMoeda(valor)}`,
@@ -152,24 +151,37 @@ export default function Enviar() {
 
       await setEnvios((anteriores) => [envio, ...anteriores]);
 
+      const msgSucesso =
+        "Envio solicitado! Um entregador parceiro vai coletar o seu item em breve.";
+
+      if (Platform.OS === "web") {
+        window.alert(msgSucesso);
+        router.replace("/atividade");
+        return;
+      }
+
       Alert.alert(
         "Envio solicitado!",
         "Um entregador parceiro vai coletar o seu item em breve.",
         [
           {
             text: "Ver na Atividade",
-            onPress: () => router.replace("/(tabs)/atividade"),
+            onPress: () => router.replace("/atividade"),
           },
         ],
         { cancelable: false },
       );
     } catch (e) {
-      Alert.alert(
-        "Erro ao solicitar",
+      const msgErro =
         e instanceof Error
           ? e.message
-          : "Não foi possível solicitar o envio. Tente novamente.",
-      );
+          : "Não foi possível solicitar o envio. Tente novamente.";
+
+      if (Platform.OS === "web") {
+        window.alert(msgErro);
+      } else {
+        Alert.alert("Erro ao solicitar", msgErro);
+      }
     } finally {
       setEnviando(false);
     }
