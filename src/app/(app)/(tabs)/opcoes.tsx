@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import { useMemo } from "react";
 import {
   Alert,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -30,11 +31,18 @@ export default function Opcoes() {
   const { cores } = useTema();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
 
-  // largura útil da grade (descontando o recuo lateral de 20px de cada lado)
   const larguraConteudo = Math.min(width - 24, LARGURA_MAXIMA_DESKTOP) - 40;
   const larguraCartao = Math.floor(
     (larguraConteudo - ESPACO * (COLUNAS - 1)) / COLUNAS,
   );
+
+  function mostrarAviso(titulo: string, mensagem: string) {
+    if (Platform.OS === "web") {
+      window.alert(`${titulo}\n\n${mensagem}`);
+    } else {
+      Alert.alert(titulo, mensagem);
+    }
+  }
 
   function aoTocarOpcao(id: string) {
     if (id === "viagem") {
@@ -55,17 +63,14 @@ export default function Opcoes() {
     } else if (id === "comida") {
       router.push("/home");
     } else if (id === "enviar") {
-      Alert.alert(
-        "Envios",
-        "Acesse a aba Envios na tela inicial para enviar e receber encomendas com entregadores parceiros.",
-      );
+      router.push("/enviar");
     } else if (id === "teens") {
-      Alert.alert(
+      mostrarAviso(
         "Uber Teens",
         "Contas exclusivas para jovens de 13 a 17 anos com recursos de segurança e acompanhamento ao vivo pelos responsáveis.",
       );
     } else if (id === "seniors") {
-      Alert.alert(
+      mostrarAviso(
         "Uber Seniors",
         "Serviço com assistência dedicada e veículos com acessibilidade facilitada.",
       );
