@@ -61,7 +61,10 @@ export default function Opcoes() {
         params: { categoria: "comfort" },
       });
     } else if (id === "comida") {
-      router.push("/home");
+      router.push({
+        pathname: "/home",
+        params: { aba: "ifood" },
+      });
     } else if (id === "enviar") {
       router.push("/enviar");
     } else if (id === "teens") {

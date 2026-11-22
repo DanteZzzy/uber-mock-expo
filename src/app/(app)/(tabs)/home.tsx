@@ -1,25 +1,37 @@
-
-import { useMemo, useState } from "react";
+import { useLocalSearchParams } from "expo-router";
+import { useEffect, useMemo, useState } from "react";
 import { RefreshControl, ScrollView, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AbasTopo, { AbaId } from "../../../components/AbasTopo";
 import ConteudoEnvios from "../../../components/home/ConteudoEnvios";
 import ConteudoIfood from "../../../components/home/ConteudoIfood";
 import ConteudoUber from "../../../components/home/ConteudoUber";
-import { useTema } from "../../../theme/TemaContext";
-import type { Cores } from "../../../theme/temas";
 import { useFetch } from "../../../hooks/useFetch";
 import { api } from "../../../services/api";
+import { useTema } from "../../../theme/TemaContext";
+import type { Cores } from "../../../theme/temas";
 
 export default function Home() {
-  const [abaSelecionada, setAbaSelecionada] = useState<AbaId>("uber");
+  const params = useLocalSearchParams<{ aba?: string }>();
+  const [abaSelecionada, setAbaSelecionada] = useState<AbaId>(
+    params.aba === "ifood" || params.aba === "envios" ? params.aba : "uber",
+  );
   const [atualizando, setAtualizando] = useState(false);
+
+  useEffect(() => {
+    if (
+      params.aba === "uber" ||
+      params.aba === "envios" ||
+      params.aba === "ifood"
+    ) {
+      setAbaSelecionada(params.aba);
+    }
+  }, [params.aba]);
 
   const insets = useSafeAreaInsets();
   const { cores } = useTema();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
 
-  // A Home busca os motoristas na API e repassa o resultado para a aba Uber.
   const motoristas = useFetch(api.usuarios);
 
   async function aoAtualizar() {
