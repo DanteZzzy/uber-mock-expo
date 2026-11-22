@@ -1,6 +1,14 @@
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Botao } from "../../components/Botao";
@@ -29,9 +37,25 @@ export default function CarrinhoTela() {
   );
   const [finalizando, setFinalizando] = useState(false);
 
+  const lojasNoCarrinho = useMemo(() => {
+    const nomes = Array.from(
+      new Set(
+        carrinho.itens
+          .map((i) => i.restauranteNome ?? carrinho.restaurante?.nome)
+          .filter((n): n is string => Boolean(n)),
+      ),
+    );
+    return nomes.join(" • ");
+  }, [carrinho.itens, carrinho.restaurante]);
+
   async function finalizarPedido() {
-    const restaurante = carrinho.restaurante;
-    if (!restaurante || carrinho.itens.length === 0) return;
+    if (carrinho.itens.length === 0) return;
+
+    const nomePedido = lojasNoCarrinho || carrinho.restaurante?.nome || "Pedido iFood";
+    const restauranteIdPrincipal =
+      carrinho.itens[0]?.restauranteId ??
+      carrinho.restaurante?.id ??
+      "burger-house";
 
     setFinalizando(true);
 
@@ -40,17 +64,16 @@ export default function CarrinhoTela() {
         .map((item) => `${item.quantidade}x ${item.nome}`)
         .join(", ");
 
-      // POST /posts conforme Seção 4 (JSONPlaceholder simula a criação do pedido)
       const postCriado = await api.criarPost({
-        title: `Pedido iFood: ${restaurante.nome}`,
+        title: `Pedido iFood: ${nomePedido}`,
         body: `Itens: ${resumoItens} | Total: ${formatarMoeda(carrinho.total)}`,
         userId: 1,
       });
 
       const pedido: PedidoSalvo = {
         id: `p_${Date.now()}`,
-        restauranteId: restaurante.id,
-        restauranteNome: restaurante.nome,
+        restauranteId: restauranteIdPrincipal,
+        restauranteNome: nomePedido,
         itens: carrinho.itens,
         subtotal: carrinho.subtotal,
         taxaEntrega: carrinho.taxaEntrega,
@@ -62,24 +85,36 @@ export default function CarrinhoTela() {
       await setPedidos((anteriores) => [pedido, ...anteriores]);
       await carrinho.limpar();
 
+      const msgSucesso = `Pedido confirmado! ${nomePedido} já está preparando o seu pedido.`;
+
+      if (Platform.OS === "web") {
+        window.alert(msgSucesso);
+        router.replace("/atividade");
+        return;
+      }
+
       Alert.alert(
         "Pedido confirmado!",
-        `${restaurante.nome} já está preparando o seu pedido.`,
+        `${nomePedido} já está preparando o seu pedido.`,
         [
           {
             text: "Ver na Atividade",
-            onPress: () => router.replace("/(tabs)/atividade"),
+            onPress: () => router.replace("/atividade"),
           },
         ],
         { cancelable: false },
       );
     } catch (e) {
-      Alert.alert(
-        "Erro ao finalizar",
+      const msgErro =
         e instanceof Error
           ? e.message
-          : "Não foi possível finalizar o pedido. Tente novamente.",
-      );
+          : "Não foi possível finalizar o pedido. Tente novamente.";
+
+      if (Platform.OS === "web") {
+        window.alert(msgErro);
+      } else {
+        Alert.alert("Erro ao finalizar", msgErro);
+      }
     } finally {
       setFinalizando(false);
     }
@@ -102,12 +137,15 @@ export default function CarrinhoTela() {
     <View style={styles.tela}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.coluna}>
-          <Text style={styles.loja}>{carrinho.restaurante?.nome}</Text>
+          <Text style={styles.loja}>{lojasNoCarrinho}</Text>
 
           {carrinho.itens.map((item) => (
             <View key={item.itemId} style={styles.linha}>
               <View style={styles.textos}>
                 <Text style={styles.nomeItem}>{item.nome}</Text>
+                {item.restauranteNome && (
+                  <Text style={styles.subtituloLoja}>{item.restauranteNome}</Text>
+                )}
                 <Text style={styles.precoItem}>
                   {formatarMoeda(item.preco * item.quantidade)}
                 </Text>
@@ -204,6 +242,10 @@ const criarEstilos = (cores: Cores) =>
       color: cores.textoPrincipal,
       fontSize: 16,
       fontWeight: "700",
+    },
+    subtituloLoja: {
+      color: cores.textoSecundario,
+      fontSize: 12,
     },
     precoItem: {
       color: cores.textoSecundario,

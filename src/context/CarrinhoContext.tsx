@@ -10,10 +10,15 @@ import { buscarRestaurante, CHAVE_CARRINHO } from "../data/restaurantes";
 import { useArmazenamento } from "../hooks/useArmazenamento";
 import type { Carrinho, ItemCardapio, Restaurante } from "../types";
 
+type ItemCarrinhoComLoja = Carrinho["itens"][number] & {
+  restauranteId?: string;
+  restauranteNome?: string;
+};
+
 type CarrinhoContextoTipo = {
   carregado: boolean;
   restaurante: Restaurante | undefined;
-  itens: Carrinho["itens"];
+  itens: ItemCarrinhoComLoja[];
   totalItens: number;
   subtotal: number;
   taxaEntrega: number;
@@ -37,15 +42,13 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
 
   const adicionar = useCallback(
     async (restauranteId: string, item: ItemCardapio) => {
+      const loja = buscarRestaurante(restauranteId);
+
       await setCarrinho((anterior) => {
-        // O carrinho só aceita itens de uma loja por vez
-        const base =
-          anterior.restauranteId === restauranteId
-            ? anterior.itens
-            : [];
+        const base = anterior.itens as ItemCarrinhoComLoja[];
         const existente = base.find((i) => i.itemId === item.id);
 
-        const itens = existente
+        const itens: ItemCarrinhoComLoja[] = existente
           ? base.map((i) =>
               i.itemId === item.id ? { ...i, quantidade: i.quantidade + 1 } : i,
             )
@@ -56,10 +59,15 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
                 nome: item.nome,
                 preco: item.preco,
                 quantidade: 1,
+                restauranteId,
+                restauranteNome: loja?.nome,
               },
             ];
 
-        return { restauranteId, itens };
+        return {
+          restauranteId: anterior.restauranteId ?? restauranteId,
+          itens,
+        };
       });
     },
     [setCarrinho],
@@ -76,9 +84,7 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
           )
           .filter((i) => i.quantidade > 0);
 
-        return itens.length === 0
-          ? CARRINHO_VAZIO
-          : { ...anterior, itens };
+        return itens.length === 0 ? CARRINHO_VAZIO : { ...anterior, itens };
       });
     },
     [setCarrinho],
@@ -99,25 +105,39 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
   }, [setCarrinho]);
 
   const valor = useMemo<CarrinhoContextoTipo>(() => {
+    const itensComLoja = carrinho.itens as ItemCarrinhoComLoja[];
     const restaurante = carrinho.restauranteId
       ? buscarRestaurante(carrinho.restauranteId)
       : undefined;
-    const subtotal = carrinho.itens.reduce(
+
+    const subtotal = itensComLoja.reduce(
       (soma, i) => soma + i.preco * i.quantidade,
       0,
     );
-    const taxaEntrega = carrinho.itens.length > 0 ? (restaurante?.taxaEntrega ?? 0) : 0;
+
+    // Soma a taxa de entrega única de cada loja presente no carrinho
+    const idsLojas = new Set(
+      itensComLoja
+        .map((i) => i.restauranteId ?? carrinho.restauranteId)
+        .filter((id): id is string => Boolean(id)),
+    );
+
+    let taxaEntrega = 0;
+    idsLojas.forEach((id) => {
+      const loja = buscarRestaurante(id);
+      if (loja) taxaEntrega += loja.taxaEntrega;
+    });
 
     return {
       carregado,
       restaurante,
-      itens: carrinho.itens,
-      totalItens: carrinho.itens.reduce((soma, i) => soma + i.quantidade, 0),
+      itens: itensComLoja,
+      totalItens: itensComLoja.reduce((soma, i) => soma + i.quantidade, 0),
       subtotal,
       taxaEntrega,
       total: subtotal + taxaEntrega,
       quantidadeDoItem: (itemId) =>
-        carrinho.itens.find((i) => i.itemId === itemId)?.quantidade ?? 0,
+        itensComLoja.find((i) => i.itemId === itemId)?.quantidade ?? 0,
       adicionar,
       alterarQuantidade,
       remover,

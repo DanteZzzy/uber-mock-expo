@@ -2,20 +2,22 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useCarrinho } from '../../context/CarrinhoContext';
+import {
+  CATEGORIAS_IFOOD,
+  filtrarRestaurantes,
+  RESTAURANTES,
+} from '../../data/restaurantes';
 import { useTema } from '../../theme/TemaContext';
 import type { Cores } from '../../theme/temas';
+import type { CategoriaIfoodId } from '../../types';
+import { formatarMoeda } from '../../utils/formatacao';
 import AtalhoCircular from '../AtalhoCircular';
 import BannerPromo from '../BannerPromo';
 import CampoBusca from '../CampoBusca';
 import CardQuadradoPromo from '../CardQuadradoPromo';
 import CardRestaurante from '../CardRestaurante';
 import EstadoVazio from '../EstadoVazio';
-import {
-  CATEGORIAS_IFOOD,
-  filtrarRestaurantes,
-  RESTAURANTES,
-} from '../../data/restaurantes';
-import type { CategoriaIfoodId } from '../../types';
 
 const BANNERS = [
   { id: 'banner1', imagem: { uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSreiJ_Tk3dNmCw8eT3O94KqcNL3UExWx4kO_SKXf08-g&s=10' } },
@@ -32,6 +34,7 @@ export default function ConteudoIfood() {
   const { cores } = useTema();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
   const router = useRouter();
+  const carrinho = useCarrinho();
 
   const [busca, setBusca] = useState('');
   const [categoriaAtiva, setCategoriaAtiva] = useState<CategoriaIfoodId | null>(null);
@@ -63,10 +66,37 @@ export default function ConteudoIfood() {
           <Text style={styles.localizacaoLabel}>R. Hum Rg, 296</Text>
           <Ionicons name="chevron-down" size={14} color={cores.textoSecundario} />
         </View>
-        <TouchableOpacity style={styles.menuBotao} activeOpacity={0.7}>
-          <Ionicons name="menu" size={20} color={cores.textoPrincipal} />
+
+        <TouchableOpacity
+          style={styles.carrinhoBotao}
+          activeOpacity={0.7}
+          onPress={() => router.push('/carrinho')}
+          accessibilityLabel="Abrir carrinho"
+        >
+          <Ionicons name="bag-handle-outline" size={20} color={cores.textoPrincipal} />
+          {carrinho.totalItens > 0 && (
+            <View style={styles.badgeCarrinho}>
+              <Text style={styles.textoBadgeCarrinho}>{carrinho.totalItens}</Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
+
+      {carrinho.totalItens > 0 && (
+        <TouchableOpacity
+          style={styles.faixaCarrinho}
+          activeOpacity={0.85}
+          onPress={() => router.push('/carrinho')}
+        >
+          <View style={styles.faixaEsquerda}>
+            <Ionicons name="bag-check-outline" size={20} color="#fff" />
+            <Text style={styles.faixaTexto}>
+              Ver sacola ({carrinho.totalItens} {carrinho.totalItens === 1 ? 'item' : 'itens'})
+            </Text>
+          </View>
+          <Text style={styles.faixaValor}>{formatarMoeda(carrinho.total)}</Text>
+        </TouchableOpacity>
+      )}
 
       <CampoBusca placeholder="Buscar lojas ou itens" valor={busca} onChangeText={setBusca} />
 
@@ -181,13 +211,55 @@ const criarEstilos = (cores: Cores) =>
       fontSize: 16,
       fontWeight: '700',
     },
-    menuBotao: {
-      width: 36,
-      height: 36,
-      borderRadius: 18,
+    carrinhoBotao: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
       backgroundColor: cores.superficieClara,
       alignItems: 'center',
       justifyContent: 'center',
+    },
+    badgeCarrinho: {
+      position: 'absolute',
+      top: -2,
+      right: -2,
+      minWidth: 18,
+      height: 18,
+      borderRadius: 9,
+      backgroundColor: cores.destaque,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 4,
+    },
+    textoBadgeCarrinho: {
+      color: '#fff',
+      fontSize: 11,
+      fontWeight: '800',
+    },
+    faixaCarrinho: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: cores.destaque,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      marginTop: 12,
+    },
+    faixaEsquerda: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    faixaTexto: {
+      color: '#fff',
+      fontSize: 14,
+      fontWeight: '700',
+    },
+    faixaValor: {
+      color: '#fff',
+      fontSize: 15,
+      fontWeight: '800',
     },
     grid: {
       flexDirection: 'row',
