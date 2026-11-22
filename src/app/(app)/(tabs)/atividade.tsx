@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
   FlatList,
@@ -80,6 +80,26 @@ export default function AtividadeTela() {
 
   const { cores } = useTema();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
+
+  const [online, setOnline] = useState(
+    Platform.OS === "web" && typeof navigator !== "undefined"
+      ? navigator.onLine
+      : true,
+  );
+
+  useEffect(() => {
+    if (Platform.OS !== "web" || typeof window === "undefined") return;
+
+    const ficarOnline = () => setOnline(true);
+    const ficarOffline = () => setOnline(false);
+
+    window.addEventListener("online", ficarOnline);
+    window.addEventListener("offline", ficarOffline);
+    return () => {
+      window.removeEventListener("online", ficarOnline);
+      window.removeEventListener("offline", ficarOffline);
+    };
+  }, []);
 
   const {
     dados: postsApi,
@@ -203,7 +223,7 @@ export default function AtividadeTela() {
     );
   }
 
-  // Estado 2: Erro de rede / Modo Avião
+  // Estado 2: Erro de rede / Modo Avião (quando falha ao buscar)
   if (erroApi) {
     return (
       <View
@@ -216,6 +236,15 @@ export default function AtividadeTela() {
       </View>
     );
   }
+
+  const bannerOffline = !online ? (
+    <View style={styles.bannerOffline}>
+      <Ionicons name="cloud-offline-outline" size={16} color="#fff" />
+      <Text style={styles.textoBannerOffline}>
+        Você está offline • Exibindo dados salvos localmente
+      </Text>
+    </View>
+  ) : null;
 
   const painelDestaques = (
     <View style={telaBaixa && duasColunas ? styles.destaquesCompactos : undefined}>
@@ -242,7 +271,6 @@ export default function AtividadeTela() {
     </View>
   );
 
-  // Desktop: lado esquerdo fixo (com scroll de segurança apenas se o monitor for baixo) e lista da direita rolando
   if (duasColunas) {
     return (
       <View
@@ -254,6 +282,7 @@ export default function AtividadeTela() {
         ]}
       >
         <View style={[styles.conteudoDesktop, { maxWidth: 1080 }]}>
+          {bannerOffline}
           <Text style={[styles.titulo, telaBaixa && styles.tituloCompacto]}>
             Atividade
           </Text>
@@ -302,7 +331,6 @@ export default function AtividadeTela() {
     );
   }
 
-  // Mobile: coluna única com FlatList + Pull-to-Refresh
   return (
     <FlatList
       style={styles.tela}
@@ -318,6 +346,7 @@ export default function AtividadeTela() {
       keyExtractor={(item) => String(item.id)}
       ListHeaderComponent={
         <View>
+          {bannerOffline}
           <Text style={styles.titulo}>Atividade</Text>
 
           <View style={styles.cabecalhoSecao}>
@@ -371,6 +400,21 @@ const criarEstilos = (cores: Cores) =>
       width: "100%",
       alignSelf: "center",
       paddingHorizontal: 20,
+    },
+    bannerOffline: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      backgroundColor: "#b91c1c",
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      borderRadius: 10,
+      marginBottom: 14,
+    },
+    textoBannerOffline: {
+      color: "#fff",
+      fontSize: 13,
+      fontWeight: "600",
     },
     titulo: {
       color: cores.textoPrincipal,
