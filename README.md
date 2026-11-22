@@ -1,141 +1,139 @@
 # Uber Mock — Expo
 
-Aplicativo mockado do Uber, desenvolvido em React Native com Expo, como trabalho da disciplina **Laboratório de Desenvolvimento de App Híbrido**.
+Aplicativo híbrido inspirado no ecossistema **Uber** (Mobilidade, Envios e iFood), desenvolvido em React Native com Expo como projeto da disciplina **Laboratório de Desenvolvimento de App Híbrido**.
 
-O objetivo do projeto não é reproduzir o backend ou a lógica real do app, e sim reconstruir a interface e a navegação entre as telas, com dados fictícios e integração com API REST.
+O objetivo do projeto é reconstruir a experiência de interface, navegação multi-fluxo, persistência local e integração resiliente com APIs REST.
 
 ## 📱 Sobre o projeto
 
 - **Framework:** React Native + Expo (Expo Router)
 - **Linguagem:** TypeScript
-- **Navegação:** Stack raiz + grupos `(auth)` e `(app)` + Tabs (Página inicial, Opções, Atividade, Conta) + Modais e Telas de Detalhes
-- **Autenticação simulada:** `AuthContext` com rotas protegidas via `Redirect`
-- **Tema:** claro e escuro, com a escolha salva no aparelho (AsyncStorage)
-- **Consumo de API:** REST API pública com `fetch`, timeout e tratamento de erros
+- **Navegação:** Stack raiz + grupos `(auth)` e `(app)` + Tabs (`Página inicial`, `Opções`, `Atividade`, `Conta`) + Modais e Rotas Dinâmicas (**18 telas funcionais**)
+- **Autenticação e Persistência Local:** `AsyncStorage` via hook customizado `useArmazenamento` (sessão, usuários cadastrados, tema, histórico de viagens, pedidos, envios, endereços e carteira)
+- **Tema:** Claro e escuro, com alternância dinâmica e persistência no aparelho
+- **Consumo de API:** Integração REST com `fetch`, `AbortController` (timeout) e tratamento completo de estados (`loading`, `erro`, `vazio` e modo offline)
 
 ## ✨ Funcionalidades
 
-- **Login protegido:** sem entrar, nenhuma tela do app abre (quem tenta acessar `/home` é redirecionado ao login)
-- **Entrar e sair:** o login leva à Home sem permitir voltar a ele (`router.replace`), e o botão **Sair**, na tela Conta, encerra a sessão
-- **Motoristas (API):** listagem na Home via `GET /users`, com pull-to-refresh e estados de carregamento, erro e vazio
-- **Detalhes do motorista:** rota dinâmica `motorista/[id]`, buscando dados via `GET /users/:id` com iniciais no avatar, informações de contato e empresa
-- **Avaliações do motorista:** listagem de avaliações recebidas via `GET /users/:id/posts`, exibida na tela de detalhes do motorista
-- **Avaliar motorista:** modal dinâmico `avaliar/[id]` com envio de avaliação via `POST /posts`, estado de loading no botão e alerta de confirmação
-- **Fluxo de viagem completo:** pedir viagem (`pedir-viagem`), acompanhar em tempo real (`acompanhar-viagem`) e consultar detalhes de viagem salva (`viagem/[id]`)
-- **Filtros na Atividade:** filtragem por tipo (viagem, comida, envio) e busca textual por destino
-- **Perfil editável:** edição de nome, e-mail, telefone e foto (por URL), com as alterações refletidas em toda a UI através do `AuthContext`
-- **Carteira:** saldo simulado, listagem de cartões com adição e remoção, persistência dos dados via AsyncStorage
-- **Central de Ajuda:** FAQ expansível com 8 perguntas frequentes
-- **Endereços salvos:** busca de endereço por CEP via ViaCEP e listagem dos endereços salvos
-- **Tema claro/escuro:** alternado por um botão na tela Conta, com a escolha mantida ao reabrir o app
-- **Layout responsivo:** versão de celular em telas estreitas e versão com colunas em telas largas (web)
+### Autenticação & Conta
+- **Cadastro e Login protegidos:** Criação de conta (`cadastro.tsx`) e autenticação (`login.tsx`) persistidas no `AsyncStorage`. Sem sessão ativa, qualquer tentativa de acessar rotas internas redireciona automaticamente para o login (`Redirect`).
+- **Controle de histórico de navegação:** O login utiliza `router.replace('/home')` para impedir retorno à tela de autenticação, e o botão **Sair** encerra a sessão com segurança.
+- **Perfil editável:** Edição de nome, e-mail, telefone e foto (por URL) refletida em tempo real em toda a interface via `AuthContext`.
+- **Carteira:** Saldo simulado, listagem, adição e remoção de cartões salvos localmente.
+- **Central de Ajuda:** FAQ expansível com perguntas frequentes.
+- **Tema claro/escuro:** Alternado na tela Conta e salvo automaticamente no dispositivo.
+
+### Mobilidade (Uber)
+- **Motoristas (API):** Listagem na Home via `GET /users`, com *pull-to-refresh* e estados de carregamento, erro e vazio.
+- **Detalhes e Avaliações:** Rota dinâmica `motorista/[id]` (`GET /users/:id` e `GET /users/:id/posts`) e modal dinâmico `avaliar/[id]` para envio de avaliações via `POST /posts`.
+- **Fluxo de viagem completo:** Escolha de categoria (`pedir-viagem`), acompanhamento em tempo real (`acompanhar-viagem`) e recibo detalhado (`viagem/[id]`).
+- **Endereços salvos:** Consulta automática de logradouro, bairro e cidade por CEP via **ViaCEP** e gerenciamento local.
+
+### Delivery (iFood) & Envios
+- **Catálogo iFood:** 11 estabelecimentos divididos em categorias (Restaurantes, Mercados, Farmácias, Bebida gelada, Pet Shops, Shopping, Gourmet, etc.) com busca textual em tempo real.
+- **Carrinho Multi-lojas:** Cardápio dinâmico (`restaurante/[id]`), atalho de sacola na Home e carrinho (`carrinho.tsx`) capaz de acumular itens de diferentes lojas simultaneamente.
+- **Uber Envios:** Solicitação de envio, recebimento ou retirada (`enviar.tsx`) com seleção de porte, cálculo dinâmico de valor e registro via API + armazenamento local.
+
+### Atividade & Resiliência Offline
+- **Histórico unificado:** Combina viagens, pedidos do iFood, envios salvos localmente e registros sincronizados da API (`GET /users/1/posts`) em uma `FlatList`.
+- **Detecção de modo offline:** Exibe banner informativo em tempo real quando o dispositivo perde conexão, mantendo os dados salvos localmente acessíveis.
+- **Layout responsivo:** Adaptação automática entre layout mobile (1 coluna) e desktop/web (múltiplas colunas).
+
+## 💾 Persistência Local (`AsyncStorage`)
+
+O projeto centraliza a leitura e gravação local no hook genérico `src/hooks/useArmazenamento.ts`, persistindo:
+
+| Chave | Conteúdo Armazenado |
+| :--- | :--- |
+| `@uber_sessao_usuario` | Sessão do usuário autenticado |
+| `@uber_usuarios_cadastrados` | Contas criadas na tela de cadastro |
+| `@uber_tema_modo` | Preferência de tema (`claro` ou `escuro`) |
+| `@uber_viagens` | Histórico de corridas concluídas e canceladas |
+| `@ifood_carrinho` | Itens ativos no carrinho multi-lojas |
+| `@ifood_pedidos` | Histórico de pedidos finalizados no iFood |
+| `@uber_envios` | Histórico de solicitações do Uber Envios |
+| `@uber_enderecos` | Endereços salvos pelo usuário |
 
 ## 🌐 Consumo da API
 
-O aplicativo consome uma API REST para listagem, consulta de detalhes e envio de avaliações dos motoristas, e o serviço ViaCEP para busca de endereços por CEP.
+O aplicativo consome a API REST **JSONPlaceholder** para simular operações de listagem, detalhamento e criação de registros, além da API pública **ViaCEP** para consulta real de endereços.
 
 ### Configuração e URL Base
-- **URL Padrão:** `https://jsonplaceholder.typicode.com`
-- **Variável de Ambiente:** configurável através de `EXPO_PUBLIC_API_URL` no arquivo `.env` (exemplo disponível em `.env.example`).
+- **URL Padrão API:** `https://jsonplaceholder.typicode.com` (`EXPO_PUBLIC_API_URL`)
+- **URL Padrão ViaCEP:** `https://viacep.com.br/ws` (`EXPO_PUBLIC_VIACEP_URL`)
 
 ### Endpoints Consumidos
-- `GET /users`: Retorna a lista de motoristas exibidos no carrossel horizontal da tela inicial (`SecaoMotoristas`).
-- `GET /users/:id`: Retorna as informações detalhadas de um motorista específico na tela `motorista/[id]` (e-mail, cidade, telefone, empresa e website).
-- `GET /users/:id/posts`: Retorna as avaliações recebidas pelo motorista, exibidas na seção de avaliações da tela `motorista/[id]`.
-- `POST /posts`: Envia a avaliação criada pelo usuário na tela/modal `avaliar/[id]`, enviando payload JSON (`{ title, body, userId }`) com cabeçalho `Content-Type: application/json; charset=UTF-8`.
-- **ViaCEP** `GET https://viacep.com.br/ws/{cep}/json/`: Busca dados de endereço a partir de um CEP informado na tela de endereços salvos. URL base configurável via `EXPO_PUBLIC_VIACEP_URL`.
+- `GET /users`: Lista os motoristas parceiros na Home e sorteia motoristas para as corridas.
+- `GET /users/:id`: Busca dados detalhados de um motorista na tela `motorista/[id]`.
+- `GET /users/:id/posts`: Busca avaliações do motorista e registros de atividade sincronizados.
+- `POST /posts`: Registra novas viagens, pedidos do iFood, envios e avaliações de motoristas.
+- `GET https://viacep.com.br/ws/{cep}/json/`: Consulta endereços reais a partir do CEP.
 
 ### Camada de Serviços e Hook `useFetch`
-- **Serviço Centralizado (`src/services/api.ts`):** Todas as chamadas utilizam a função `req<T>`, que implementa verificação de status HTTP (`404 Não encontrado`, erros de rede) e tempo limite de 10 segundos via `AbortController`.
-- **Hook `useFetch` (`src/hooks/useFetch.ts`):** Gerencia reatividade dos estados `dados`, `loading` e `erro`, com suporte a cancelamento ao desmontar a tela, prevenção de respostas fora de ordem (`race conditions`), recarregamento manual (`recarregar`) e pull-to-refresh (`atualizar`).
+- **Serviço Centralizado (`src/services/api.ts`):** Função genérica `req<T>` com validação de status HTTP (`404`, erros de servidor/rede) e *timeout* de 10 segundos via `AbortController`.
+- **Hook `useFetch` (`src/hooks/useFetch.ts`):** Gerencia os estados `dados`, `loading` e `erro`, evitando *race conditions* e atualizações em componentes desmontados.
 
 ## ⚙️ Variáveis de Ambiente
-
-O projeto lê as seguintes variáveis de ambiente em tempo de build:
 
 ```env
 EXPO_PUBLIC_API_URL=https://jsonplaceholder.typicode.com
 EXPO_PUBLIC_VIACEP_URL=https://viacep.com.br/ws
 ```
 
-O arquivo `.env.example` contém o template com todos os valores padrão. Copie-o para `.env` e ajuste conforme necessário. Caso o arquivo `.env` não exista, as URLs padrão acima são usadas automaticamente pelo código.
+O arquivo `.env.example` contém o template padrão. Caso o `.env` não seja criado, os valores acima são utilizados automaticamente como *fallback*.
 
 ## 🧪 Testando os Estados da Aplicação (Modo Avião)
 
-Para validar o tratamento resiliente de erros, estados de carregamento e recuperação de conexão da aplicação:
-
 ### No Celular Físico ou Emulador
-1. **Carregamento inicial:** Abra o aplicativo com a conexão de internet ativa para que o bundle do Expo seja carregado.
-2. **Simular perda de conexão:** Ative o **Modo Avião** (Airplane Mode) no aparelho ou desligue o Wi-Fi e dados móveis.
-3. **Verificar Estado de Erro na Home:**
-   - Execute o gesto de puxar para atualizar (*pull-to-refresh*) na lista de motoristas.
-   - O aplicativo capturará a falha de rede e exibirá o componente `EstadoErro` com o ícone de offline e a mensagem *"Sem conexão com o servidor."*
-4. **Verificar Estado de Erro no Detalhe do Motorista:**
-   - Ainda em modo avião, tente acessar o detalhe de um motorista ou recarregar a tela `motorista/[id]`.
-   - O componente `EstadoErro` será apresentado com o botão **"Tentar de novo"**.
-5. **Avaliações do motorista offline:**
-   - Em modo avião, acesse a tela de detalhes do motorista.
-   - A seção de avaliações exibirá um erro de rede no lugar da lista de avaliações.
-6. **Verificar Erro de Envio na Avaliação:**
-   - Na tela `avaliar/[id]`, preencha o formulário e clique em **Enviar avaliação**.
-   - O botão ficará em estado de carregamento e, em seguida, exibirá um `Alert` informando o erro de envio sem fechar o formulário.
-7. **Busca ViaCEP offline:**
-   - Em modo avião, acesse a tela de endereços salvos e tente buscar um CEP.
-   - A tela exibirá a mensagem de erro *"Sem conexão com o servidor."*
-8. **Recuperação da Conexão:**
-   - Desative o Modo Avião e restabeleça a conexão com a internet.
-   - Pressione o botão **"Tentar de novo"** no componente de erro. Os dados serão requisitados novamente e o estado de sucesso será renderizado normalmente.
+1. Abra o aplicativo com internet ativa para carregar o bundle inicial.
+2. Ative o **Modo Avião** ou desligue Wi-Fi e dados móveis.
+3. **Na Home / Detalhes / Avaliações / ViaCEP:** Puxe para atualizar (*pull-to-refresh*) ou tente buscar um CEP para visualizar o componente `EstadoErro` com opção de retentativa (**"Tentar de novo"**).
+4. **Na aba Atividade:** Os dados salvos localmente continuam disponíveis e, ao recarregar sem rede, o app exibe o tratamento de erro ou o banner de modo offline.
+5. Desative o Modo Avião e toque em **"Tentar de novo"** para restabelecer a sincronização.
 
 ### No Navegador Web (Chrome / Edge / Firefox)
 1. Pressione `F12` para abrir o **DevTools**.
 2. Acesse a aba **Network** (Rede).
-3. No seletor de limitação de rede (*Throttling*), selecione **Offline**.
-4. Teste as ações de recarregamento e envio de dados para visualizar os estados de erro e retentativa.
+3. Altere o seletor de rede (*Throttling*) para **Offline** e teste o botão de atualizar (`↻`) na aba **Atividade** ou a busca de CEP em **Endereços**.
 
 ## 🖼️ Telas
 
 ### Login
-
 ![Tela de Login](./assets/screenshots/login.png)
 
-### Página inicial (Home)
-
-A Home tem três abas no topo: **Uber**, **Envios** e **iFood**.
-
+### Página inicial (Home — Uber, Envios e iFood)
 ![Página Inicial](./assets/screenshots/home.png)
 
 ### Opções
-
 ![Opções](./assets/screenshots/opcoes.png)
 
 ### Atividade
-
 ![Atividade](./assets/screenshots/atividade.png)
 
 ### Conta
-
 ![Conta](./assets/screenshots/perfil.png)
-
 
 ## 🧭 Fluxo de navegação
 
 ```
 /                        → Redirect: com sessão vai para /home, sem sessão vai para /login
-(auth)/login             → ao entrar: router.replace('/home')
-(app)/_layout            → guarda: sem sessão, Redirect para /login
-(app)/(tabs)             → home, opcoes, atividade, conta
-(app)/pedir-viagem       → fluxo de pedido de viagem
-(app)/acompanhar-viagem  → acompanhamento de viagem em andamento
-(app)/viagem/[id]        → detalhe de viagem salva (abre por cima das abas)
-(app)/motorista/[id]     → detalhe do motorista (abre ao tocar no card da Home)
-(app)/avaliar/[id]       → avaliação do motorista (modal aberto a partir do detalhe)
-(app)/perfil             → Edição de perfil (nome, e-mail, telefone, foto)
-(app)/carteira           → Carteira (saldo e cartões)
-(app)/ajuda              → Central de Ajuda (FAQ)
-(app)/enderecos          → Endereços salvos (ViaCEP)
+(auth)/login             → autenticação (router.replace('/home'))
+(auth)/cadastro          → criação de nova conta com persistência local
+(app)/_layout            → guarda de rota: sem sessão, Redirect para /login
+(app)/(tabs)             → home (Uber | Envios | iFood), opcoes, atividade, conta
+(app)/pedir-viagem       → solicitação de corrida por categoria
+(app)/acompanhar-viagem  → acompanhamento em tempo real, conclusão e cancelamento
+(app)/viagem/[id]        → recibo detalhado de viagem, pedido ou envio
+(app)/motorista/[id]     → perfil e avaliações do motorista
+(app)/avaliar/[id]       → modal de avaliação do motorista (POST /posts)
+(app)/restaurante/[id]   → cardápio da loja e adição ao carrinho
+(app)/carrinho           → carrinho multi-lojas e finalização de pedido
+(app)/enviar             → formulário de solicitação do Uber Envios
+(app)/enderecos          → endereços salvos com consulta ViaCEP
+(app)/perfil             → edição de perfil
+(app)/carteira           → saldo e gerenciamento de cartões
+(app)/ajuda              → central de ajuda (FAQ)
 ```
-
-> A sessão é mantida apenas em memória. Ao fechar o app ou recarregar a página no navegador, é preciso entrar novamente.
 
 ## 🚀 Como rodar o projeto
 
@@ -158,62 +156,54 @@ cp .env.example .env
 npx expo start
 ```
 
-Depois de rodar o `npx expo start`, escolha uma das opções:
-
 - **Web:** pressione `w` no terminal
-- **Android:** pressione `a` no terminal (requer emulador configurado) ou use o app **Expo Go** no celular
-- **Celular (Expo Go):** escaneie o QR code com o app Expo Go, usando uma versão do Expo Go compatível com o SDK do projeto
-
-### ⚠️ Rodando no celular (Expo Go) e a versão do SDK
-
-Este projeto usa o **Expo SDK 57**. Cada versão do Expo Go suporta apenas um SDK, e a versão disponível nas lojas pode não ser compatível com ele. No **iPhone**, o Expo Go da App Store pode não abrir o projeto, e o app acusa que o projeto é incompatível e precisa ser atualizado.
-
-Alternativa para testar no celular, sem o Expo Go:
-
-1. Com o `npx expo start` rodando no computador, descubra o endereço IPv4 da máquina (no Windows, `ipconfig`).
-2. No navegador do celular, **conectado à mesma rede Wi-Fi**, abra `http://SEU-IP:8081`.
-3. Se não abrir, libere o Node.js no firewall do Windows para redes privadas.
+- **Android:** pressione `a` no terminal ou escaneie o QR Code com o **Expo Go**
+- **Celular via navegador (alternativa ao Expo Go):** acesse `http://SEU-IP-LOCAL:8081` conectado à mesma rede Wi-Fi
 
 ## 📂 Estrutura do projeto
 
 ```
 src/
-  context/
-    AuthContext.tsx        # Sessão do usuário (entrar / sair / editar perfil)
   app/
-    _layout.tsx            # Stack raiz (TemaProvider + AuthProvider)
-    index.tsx              # Decide: Home (com sessão) ou Login (sem sessão)
+    _layout.tsx              # Stack raiz (TemaProvider + AuthProvider + CarrinhoProvider)
+    index.tsx                # Redirecionamento inicial baseado na sessão
     (auth)/
       _layout.tsx
-      login.tsx            # Tela de Login
+      login.tsx              # Tela de Login
+      cadastro.tsx           # Tela de Cadastro
     (app)/
-      _layout.tsx          # Guarda: Redirect para o login + Stack
+      _layout.tsx          # Guarda de autenticação + Stack interno
       (tabs)/
-        _layout.tsx        # Barra de abas inferior
-        home.tsx
-        opcoes.tsx
-        atividade.tsx
-        conta.tsx
-      pedir-viagem.tsx     # Fluxo de pedido de viagem
-      acompanhar-viagem.tsx # Acompanhamento de viagem em andamento
-      viagem/
-        [id].tsx           # Detalhe da viagem (rota dinâmica)
-      motorista/
-        [id].tsx           # Detalhe do motorista (rota dinâmica)
-      avaliar/
-        [id].tsx           # Modal de avaliação do motorista
-      perfil.tsx           # Edição de perfil (nome, e-mail, telefone, foto)
-      carteira.tsx         # Carteira (saldo e cartões)
-      ajuda.tsx            # Central de Ajuda (FAQ)
-      enderecos.tsx        # Endereços salvos (ViaCEP)
-  components/              # Componentes reutilizáveis
-  data/                    # Dados mockados
-  hooks/                   # Hooks customizados (useFetch)
-  services/                # Integração com API REST (api.ts)
-  theme/
-    cores.ts               # Paleta do tema escuro
-    temas.ts               # Paletas clara e escura
-    TemaContext.tsx        # Tema ativo, alternância e persistência
+        _layout.tsx          # Barra de navegação inferior flutuante
+        home.tsx             # Abas Uber, Envios e iFood
+        opcoes.tsx           # Grade de serviços
+        atividade.tsx        # Histórico unificado com FlatList e status offline
+        conta.tsx            # Configurações, tema e logout
+      pedir-viagem.tsx       # Pedido de corrida
+      acompanhar-viagem.tsx  # Corrida em andamento
+      restaurante/[id].tsx   # Cardápio do estabelecimento
+      carrinho.tsx           # Carrinho multi-lojas
+      enviar.tsx             # Solicitação de envio
+      enderecos.tsx          # Endereços salvos (ViaCEP)
+      viagem/[id].tsx        # Detalhes de viagem, pedido ou envio
+      motorista/[id].tsx     # Perfil do motorista
+      avaliar/[id].tsx       # Modal de avaliação
+      perfil.tsx             # Edição de perfil
+      carteira.tsx           # Carteira digital
+      ajuda.tsx              # Central de Ajuda
+  components/                # Componentes reutilizáveis (atividade, home, ifood, opcoes, etc.)
+  context/
+    AuthContext.tsx          # Autenticação e dados do usuário
+    CarrinhoContext.tsx      # Estado global do carrinho multi-lojas
+  data/                      # Dados mockados e constantes
+  hooks/
+    useArmazenamento.ts      # Wrapper genérico do AsyncStorage
+    useFetch.ts              # Hook de requisições HTTP com controle de ciclo de vida
+  services/
+    api.ts                   # Cliente HTTP (JSONPlaceholder e ViaCEP)
+  theme/                     # Paletas claro/escuro e TemaContext
+  utils/                     # Formatação de moeda, data, telefone e CEP
+  types.ts                   # Tipagens TypeScript do projeto
 ```
 
 ## 👥 Autores
@@ -223,4 +213,4 @@ src/
 
 ## 📚 Disciplina
 
-Laboratório de Desenvolvimento de App Híbrido — Universidade de Vassouras
+Laboratório de Desenvolvimento de Aplicativos Híbridos — 7°Período — Universidade de Vassouras
