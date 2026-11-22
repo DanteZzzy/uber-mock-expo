@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo } from "react";
-import { Alert, Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { BotaoPilula } from "../../../components/BotaoPilula";
 import EstadoVazio from "../../../components/EstadoVazio";
@@ -15,13 +15,14 @@ import type { ItemCardapio } from "../../../types";
 import { formatarMoeda } from "../../../utils/formatacao";
 
 export default function DetalheRestaurante() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const params = useLocalSearchParams<{ id: string | string[] }>();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const router = useRouter();
   const { cores } = useTema();
   const styles = useMemo(() => criarEstilos(cores), [cores]);
   const carrinho = useCarrinho();
 
-  const restaurante = buscarRestaurante(id);
+  const restaurante = id ? buscarRestaurante(id) : undefined;
 
   if (!restaurante) {
     return (
@@ -36,31 +37,9 @@ export default function DetalheRestaurante() {
     );
   }
 
-  const outraLojaNoCarrinho =
-    carrinho.itens.length > 0 &&
-    carrinho.restaurante !== undefined &&
-    carrinho.restaurante.id !== restaurante.id;
-
   function adicionarItem(item: ItemCardapio) {
     if (!restaurante) return;
-
-    if (outraLojaNoCarrinho) {
-      Alert.alert(
-        "Trocar de loja?",
-        `Seu carrinho tem itens de ${carrinho.restaurante?.nome}. Deseja esvaziá-lo e começar um pedido em ${restaurante.nome}?`,
-        [
-          { text: "Cancelar", style: "cancel" },
-          {
-            text: "Esvaziar e adicionar",
-            style: "destructive",
-            onPress: () => carrinho.adicionar(restaurante.id, item),
-          },
-        ],
-      );
-      return;
-    }
-
-    carrinho.adicionar(restaurante.id, item);
+    void carrinho.adicionar(restaurante.id, item);
   }
 
   return (
@@ -77,11 +56,19 @@ export default function DetalheRestaurante() {
               <Text style={styles.textoInfo}>{restaurante.nota.toFixed(1)}</Text>
             </View>
             <View style={styles.info}>
-              <Ionicons name="time-outline" size={16} color={cores.textoSecundario} />
+              <Ionicons
+                name="time-outline"
+                size={16}
+                color={cores.textoSecundario}
+              />
               <Text style={styles.textoInfo}>{restaurante.tempoEntrega}</Text>
             </View>
             <View style={styles.info}>
-              <Ionicons name="bicycle-outline" size={16} color={cores.textoSecundario} />
+              <Ionicons
+                name="bicycle-outline"
+                size={16}
+                color={cores.textoSecundario}
+              />
               <Text style={styles.textoInfo}>
                 Entrega {formatarMoeda(restaurante.taxaEntrega)}
               </Text>
@@ -92,7 +79,6 @@ export default function DetalheRestaurante() {
 
           {restaurante.cardapio.map((item) => {
             const quantidade = carrinho.quantidadeDoItem(item.id);
-            const noCarrinho = !outraLojaNoCarrinho && quantidade > 0;
 
             return (
               <View key={item.id} style={styles.linha}>
@@ -102,11 +88,15 @@ export default function DetalheRestaurante() {
                   <Text style={styles.preco}>{formatarMoeda(item.preco)}</Text>
                 </View>
 
-                {noCarrinho ? (
+                {quantidade > 0 ? (
                   <SeletorQuantidade
                     quantidade={quantidade}
-                    onAumentar={() => carrinho.alterarQuantidade(item.id, 1)}
-                    onDiminuir={() => carrinho.alterarQuantidade(item.id, -1)}
+                    onAumentar={() => {
+                      void carrinho.alterarQuantidade(item.id, 1);
+                    }}
+                    onDiminuir={() => {
+                      void carrinho.alterarQuantidade(item.id, -1);
+                    }}
                   />
                 ) : (
                   <BotaoPilula
